@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mockup Pages</title>
+    <style>
+      :root {
+        --bg: #f3f5f8;
+        --panel: #ffffff;
+        --text: #102033;
+        --muted: #667085;
+        --line: #d9e2ec;
+        --accent: #0f766e;
+        --accent-soft: #dff6f3;
+        --shadow: 0 20px 50px rgba(16, 32, 51, 0.12);
+        --radius: 20px;
+      }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Arial, sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top left, rgba(15, 118, 110, 0.12), transparent 30%),
+          linear-gradient(180deg, #f8fbfc 0%, var(--bg) 100%);
+      }
+      .layout { min-height: 100%; display: grid; grid-template-columns: 320px 1fr; }
+      .sidebar {
+        padding: 28px;
+        border-right: 1px solid rgba(217, 226, 236, 0.9);
+        background: rgba(255, 255, 255, 0.72);
+        backdrop-filter: blur(10px);
+      }
+      .brand { margin-bottom: 24px; }
+      .brand h1 { margin: 0 0 8px; font-size: 28px; line-height: 1; }
+      .brand p { margin: 0; color: var(--muted); line-height: 1.5; }
+      .meta { display: grid; gap: 12px; margin-bottom: 22px; }
+      .meta-card {
+        padding: 14px 16px;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: var(--panel);
+      }
+      .meta-card strong { display: block; margin-bottom: 4px; }
+      .meta-card span { color: var(--muted); font-size: 14px; line-height: 1.5; }
+      .mockup-list { display: grid; gap: 12px; }
+      .mockup-card {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: var(--panel);
+        padding: 16px;
+        text-align: left;
+        cursor: pointer;
+        transition: 160ms ease;
+        display: block;
+        text-decoration: none;
+        color: inherit;
+      }
+      .mockup-card:hover, .mockup-card[aria-current="true"] {
+        border-color: rgba(15, 118, 110, 0.35);
+        box-shadow: 0 14px 30px rgba(15, 118, 110, 0.12);
+        transform: translateY(-1px);
+      }
+      .mockup-card small {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        color: var(--accent);
+        font-weight: 700;
+        margin-bottom: 10px;
+      }
+      .mockup-card strong { display: block; margin-bottom: 6px; font-size: 16px; }
+      .mockup-card span { display: block; color: var(--muted); font-size: 14px; line-height: 1.45; }
+      .content { padding: 24px; display: grid; gap: 18px; }
+      .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 18px 22px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+      }
+      .toolbar-main { flex: 1; }
+      .toolbar-main h2 { margin: 0 0 6px; font-size: 22px; }
+      .toolbar-main p { margin: 0; color: var(--muted); }
+      .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+      .btn {
+        appearance: none;
+        border: 0;
+        border-radius: 999px;
+        padding: 12px 16px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .btn-primary { background: var(--accent); color: #fff; }
+      .btn-secondary { background: #edf2f7; color: var(--text); }
+      .preview { display: grid; grid-template-columns: 1fr 320px; gap: 18px; }
+      .frame-shell, .notes {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+      }
+      .frame-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 18px;
+        border-bottom: 1px solid var(--line);
+      }
+      .browser-dots { display: flex; gap: 8px; }
+      .browser-dots span {
+        width: 11px;
+        height: 11px;
+        border-radius: 999px;
+        background: #d0d5dd;
+      }
+      iframe {
+        display: block;
+        width: 100%;
+        height: calc(100vh - 180px);
+        min-height: 680px;
+        border: 0;
+        border-radius: 0 0 var(--radius) var(--radius);
+        background: #fff;
+      }
+      .notes { padding: 18px; display: grid; gap: 18px; align-content: start; }
+      .notes h3, .notes h4 { margin: 0 0 8px; }
+      .notes p, .notes li { color: var(--muted); line-height: 1.5; }
+      .notes ul { margin: 0; padding-left: 18px; }
+      .path {
+        padding: 12px 14px;
+        border-radius: 14px;
+        background: #f8fafc;
+        border: 1px dashed var(--line);
+        font-family: Consolas, monospace;
+        font-size: 13px;
+        word-break: break-all;
+      }
+      @media (max-width: 1100px) { .preview { grid-template-columns: 1fr; } }
+      @media (max-width: 900px) {
+        .layout { grid-template-columns: 1fr; }
+        .sidebar { border-right: 0; border-bottom: 1px solid rgba(217, 226, 236, 0.9); }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="brand">
+          <h1>Mockup Pages</h1>
+          <p>Локальный showroom для интерактивных макетов. Этот же набор страниц можно публиковать на GitHub Pages и отдавать заказчику одной ссылкой.</p>
+        </div>
+        <div class="meta">
+          <div class="meta-card">
+            <strong>Как работаем</strong>
+            <span>Вы присылаете скрин и сценарии. Я собираю интерактивный экран, а вы смотрите его здесь через preview.</span>
+          </div>
+          <div class="meta-card">
+            <strong>Публикация</strong>
+            <span>Для внешнего просмотра лучше всего подходит GitHub Pages: статические HTML-макеты получают постоянную публичную ссылку.</span>
+          </div>
+        </div>
+        <div class="mockup-list" id="mockupList"></div>
+      </aside>
+      <main class="content">
+        <section class="toolbar">
+          <div class="toolbar-main">
+            <h2 id="title">Выберите макет</h2>
+            <p id="description">В этом окне будет live preview выбранного интерактивного экрана.</p>
+          </div>
+          <div class="actions">
+            <a class="btn btn-secondary" id="openLink" href="./mockups/courier-visits-mobile/index.html" target="_blank" rel="noopener noreferrer">Открыть отдельно</a>
+            <button class="btn btn-primary" id="copyBtn" type="button">Скопировать путь</button>
+          </div>
+        </section>
+        <section class="preview">
+          <div class="frame-shell">
+            <div class="frame-header">
+              <strong id="frameLabel">Preview</strong>
+              <div class="browser-dots"><span></span><span></span><span></span></div>
+            </div>
+            <iframe id="previewFrame" name="previewFrame" title="Mockup preview" src="./mockups/courier-visits-mobile/index.html"></iframe>
+          </div>
+          <aside class="notes">
+            <section>
+              <h3>Ссылка для публикации</h3>
+              <div class="path" id="publishedPath">Сначала выберите макет</div>
+            </section>
+            <section>
+              <h4>Что можно согласовывать</h4>
+              <ul>
+                <li>внешний вид экранов и блоков</li>
+                <li>клики, табы, модалки, drawer, toast</li>
+                <li>состояния loading, empty, error, success</li>
+                <li>мобильную и десктопную версии</li>
+              </ul>
+            </section>
+            <section>
+              <h4>Формат постановки</h4>
+              <ul id="requirements"></ul>
+            </section>
+          </aside>
+        </section>
+      </main>
+    </div>
+    <script>
+      const mockups = [
+        {
+          id: "courier-visits-mobile",
+          name: "Визиты курьера",
+          tag: "Client",
+          path: "./mockups/courier-visits-mobile/index.html",
+          publishPath: "/mockups/courier-visits-mobile/",
+          description: "Мобильный список выездов: поиск, фильтры по статусам и действия на карточке клиента.",
+          requirements: [
+            "Сценарии по кнопкам Позвонить, SMS и Заметка",
+            "Правила переключения между вкладками",
+            "Что открывается по клику на карточку",
+            "Нужны ли доп. состояния и экраны"
+          ]
+        },
+        {
+          id: "request-workbench",
+          name: "Список заявок",
+          tag: "Demo",
+          path: "./mockups/request-workbench/index.html",
+          publishPath: "/mockups/request-workbench/",
+          description: "Пример интерактивного макета: фильтры, карточки, боковая панель и сохранение сценария.",
+          requirements: [
+            "Скрин или референс экрана",
+            "Что происходит по кликам",
+            "Нужные состояния и тексты",
+            "Нужна ли мобильная версия"
+          ]
+        }
+      ];
+      const list = document.getElementById("mockupList");
+      const title = document.getElementById("title");
+      const description = document.getElementById("description");
+      const frame = document.getElementById("previewFrame");
+      const frameLabel = document.getElementById("frameLabel");
+      const pathBox = document.getElementById("publishedPath");
+      const requirements = document.getElementById("requirements");
+      const openLink = document.getElementById("openLink");
+      const copyBtn = document.getElementById("copyBtn");
+      let selected = mockups[0];
+      function renderList() {
+        list.innerHTML = "";
+        mockups.forEach((mockup) => {
+          const button = document.createElement("a");
+          button.className = "mockup-card";
+          button.href = mockup.path;
+          button.target = "previewFrame";
+          button.setAttribute("aria-current", String(mockup.id === selected.id));
+          button.innerHTML = `<small>${mockup.tag}</small><strong>${mockup.name}</strong><span>${mockup.description}</span>`;
+          button.addEventListener("click", () => {
+            selected = mockup;
+            syncView();
+          });
+          list.appendChild(button);
+        });
+      }
+      function syncView() {
+        renderList();
+        title.textContent = selected.name;
+        description.textContent = selected.description;
+        frame.src = selected.path;
+        frameLabel.textContent = selected.path;
+        openLink.href = selected.path;
+        pathBox.textContent = `https://<your-user>.github.io/<repo>${selected.publishPath}`;
+        requirements.innerHTML = selected.requirements.map((item) => `<li>${item}</li>`).join("");
+      }
+      copyBtn.addEventListener("click", async () => {
+        if (!selected) {
+          return;
+        }
+        const text = `${location.origin}${location.pathname.replace(/index\.html$/, "")}${selected.publishPath.replace(/^\//, "")}`;
+        try {
+          await navigator.clipboard.writeText(text);
+          copyBtn.textContent = "Путь скопирован";
+          setTimeout(() => { copyBtn.textContent = "Скопировать путь"; }, 1200);
+        } catch {
+          copyBtn.textContent = "Не удалось";
+          setTimeout(() => { copyBtn.textContent = "Скопировать путь"; }, 1200);
+        }
+      });
+      syncView();
+    </script>
+  </body>
+</html>

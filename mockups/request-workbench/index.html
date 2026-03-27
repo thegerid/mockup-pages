@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Список заявок</title>
+    <style>
+      :root {
+        --bg: #eef2f6;
+        --panel: #ffffff;
+        --text: #0f172a;
+        --muted: #64748b;
+        --line: #dbe3ec;
+        --accent: #0f766e;
+        --accent-soft: #dff6f3;
+        --orange: #ffedd5;
+        --orange-text: #c2410c;
+        --blue: #dbeafe;
+        --blue-text: #1d4ed8;
+        --shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
+        --radius: 18px;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Segoe UI", Arial, sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at top right, rgba(15, 118, 110, 0.12), transparent 24%),
+          linear-gradient(180deg, #f8fbfc 0%, var(--bg) 100%);
+      }
+      .app { min-height: 100vh; display: grid; grid-template-columns: 260px minmax(0, 1fr); }
+      .sidebar {
+        padding: 26px 18px;
+        background: rgba(255, 255, 255, 0.86);
+        backdrop-filter: blur(10px);
+        border-right: 1px solid rgba(219, 227, 236, 0.95);
+      }
+      .logo { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+      .logo-mark {
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        background: linear-gradient(135deg, #0f766e, #0ea5a4);
+        font-weight: 800;
+      }
+      .logo strong { display: block; }
+      .logo span { color: var(--muted); font-size: 13px; }
+      .nav { display: grid; gap: 10px; }
+      .nav button {
+        width: 100%;
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--text);
+        text-align: left;
+        padding: 14px;
+        border-radius: 14px;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      .nav button[aria-current="true"] {
+        background: var(--accent-soft);
+        color: var(--accent);
+        border-color: rgba(15, 118, 110, 0.18);
+      }
+      .main { padding: 24px; display: grid; gap: 18px; }
+      .hero, .board, .drawer {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+      }
+      .hero {
+        padding: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+      }
+      .hero h1 { margin: 0 0 8px; font-size: 28px; }
+      .hero p { margin: 0; color: var(--muted); }
+      .hero-actions { display: flex; gap: 10px; }
+      .btn {
+        appearance: none;
+        border: 0;
+        border-radius: 999px;
+        padding: 12px 16px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .btn-primary { background: var(--accent); color: #fff; }
+      .btn-secondary { background: #eef2f6; color: var(--text); }
+      .board {
+        padding: 18px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 340px;
+        gap: 18px;
+      }
+      .workspace { display: grid; gap: 16px; }
+      .toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .chips { display: flex; gap: 10px; flex-wrap: wrap; }
+      .chip {
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--text);
+        border-radius: 999px;
+        padding: 10px 14px;
+        cursor: pointer;
+        font-weight: 700;
+      }
+      .chip[aria-selected="true"] {
+        border-color: rgba(15, 118, 110, 0.22);
+        background: var(--accent-soft);
+        color: var(--accent);
+      }
+      .search { width: min(320px, 100%); }
+      .search input {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 12px 14px;
+        font: inherit;
+        color: var(--text);
+        background: #fbfdff;
+      }
+      .cards { display: grid; gap: 14px; }
+      .card {
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 16px;
+        background: #fff;
+        cursor: pointer;
+        transition: 140ms ease;
+      }
+      .card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+      }
+      .card-top, .card-bottom {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .card-top { margin-bottom: 12px; }
+      .card h3 { margin: 0 0 6px; font-size: 18px; }
+      .card p { margin: 0; color: var(--muted); }
+      .pill {
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .pill.orange { background: var(--orange); color: var(--orange-text); }
+      .pill.blue { background: var(--blue); color: var(--blue-text); }
+      .metric { color: var(--muted); font-size: 14px; }
+      .drawer {
+        padding: 18px;
+        display: grid;
+        gap: 16px;
+        align-content: start;
+      }
+      .drawer h2, .drawer h3 { margin: 0; }
+      .drawer p { margin: 0; color: var(--muted); line-height: 1.5; }
+      .field { display: grid; gap: 8px; }
+      .field label { font-size: 14px; font-weight: 700; }
+      .field input, .field textarea {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 12px 14px;
+        font: inherit;
+        resize: vertical;
+      }
+      .timeline { display: grid; gap: 10px; }
+      .timeline-item {
+        padding: 12px 14px;
+        border-radius: 14px;
+        background: #f8fafc;
+        border: 1px solid #edf2f7;
+      }
+      .timeline-item strong { display: block; margin-bottom: 4px; }
+      .toast {
+        position: fixed;
+        right: 24px;
+        bottom: 24px;
+        max-width: 340px;
+        padding: 14px 16px;
+        border-radius: 16px;
+        background: #0f172a;
+        color: #fff;
+        box-shadow: 0 20px 45px rgba(15, 23, 42, 0.25);
+        opacity: 0;
+        transform: translateY(14px);
+        pointer-events: none;
+        transition: 180ms ease;
+      }
+      .toast.show { opacity: 1; transform: translateY(0); }
+      @media (max-width: 1100px) { .board { grid-template-columns: 1fr; } }
+      @media (max-width: 820px) {
+        .app { grid-template-columns: 1fr; }
+        .sidebar { border-right: 0; border-bottom: 1px solid rgba(219, 227, 236, 0.95); }
+        .hero { flex-direction: column; align-items: stretch; }
+        .hero-actions { width: 100%; flex-wrap: wrap; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="logo">
+          <div class="logo-mark">MP</div>
+          <div>
+            <strong>Mockup Portal</strong>
+            <span>Interactive review mode</span>
+          </div>
+        </div>
+        <nav class="nav" id="nav">
+          <button type="button" data-page="requests" aria-current="true">Заявки</button>
+          <button type="button" data-page="analytics">Аналитика</button>
+          <button type="button" data-page="customers">Клиенты</button>
+        </nav>
+      </aside>
+      <main class="main">
+        <section class="hero">
+          <div>
+            <h1 id="pageTitle">Список заявок</h1>
+            <p id="pageSubtitle">Интерактивный макет для согласования сценария обработки заявок.</p>
+          </div>
+          <div class="hero-actions">
+            <button class="btn btn-secondary" type="button" id="resetBtn">Сбросить</button>
+            <button class="btn btn-primary" type="button" id="newBtn">Новая заявка</button>
+          </div>
+        </section>
+        <section class="board">
+          <div class="workspace">
+            <div class="toolbar">
+              <div class="chips" id="filters">
+                <button class="chip" type="button" data-filter="all" aria-selected="true">Все</button>
+                <button class="chip" type="button" data-filter="new">Новые</button>
+                <button class="chip" type="button" data-filter="review">На проверке</button>
+              </div>
+              <div class="search">
+                <input id="searchInput" type="search" placeholder="Поиск по номеру или клиенту" />
+              </div>
+            </div>
+            <div class="cards" id="cards"></div>
+          </div>
+          <aside class="drawer">
+            <h2 id="drawerTitle">Выберите заявку</h2>
+            <p id="drawerText">Кликните по карточке слева. Здесь можно обсуждать, что должно происходить по нажатию кнопок и как меняются состояния интерфейса.</p>
+            <div class="field">
+              <label for="ownerInput">Ответственный</label>
+              <input id="ownerInput" type="text" value="Операционный отдел" />
+            </div>
+            <div class="field">
+              <label for="noteInput">Комментарий</label>
+              <textarea id="noteInput" rows="5">После подтверждения переводим заявку в этап "На проверке" и показываем уведомление.</textarea>
+            </div>
+            <div class="timeline" id="timeline">
+              <div class="timeline-item"><strong>Шаг 1</strong><span>Открываем карточку заявки.</span></div>
+              <div class="timeline-item"><strong>Шаг 2</strong><span>Редактируем детали и сценарий перехода.</span></div>
+            </div>
+            <button class="btn btn-primary" type="button" id="saveBtn">Сохранить сценарий</button>
+          </aside>
+        </section>
+      </main>
+    </div>
+    <div class="toast" id="toast">Сценарий обновлен. Эту механику можно дальше менять по вашим комментариям.</div>
+    <script>
+      const items = [
+        { id: 1, title: "Заявка #4821", customer: "ООО Север", state: "new", badge: ["orange", "Новая"], volume: "6 документов", description: "Клиент загрузил комплект документов. Нужно подтвердить корректность набора.", timeline: ["Открываем карточку заявки.", "Проверяем документы.", "После подтверждения показываем success toast."] },
+        { id: 2, title: "Заявка #4816", customer: "ИП Миронов", state: "review", badge: ["blue", "На проверке"], volume: "3 документа", description: "Ожидается решение аналитика. При нажатии можно открыть боковую панель со статусом.", timeline: ["Пользователь нажимает на карточку.", "Справа открывается сценарий обработки.", "После сохранения статус остаётся в текущем этапе."] },
+        { id: 3, title: "Заявка #4804", customer: "ООО Вектор", state: "new", badge: ["orange", "Новая"], volume: "11 документов", description: "Есть вложения и замечание по заполнению. Можно показать, как работает предупреждение.", timeline: ["Показываем карточку с подсказкой.", "При клике отображаем детали в панели.", "Заказчик комментирует, что нужно изменить."] }
+      ];
+      const pageLabels = {
+        requests: ["Список заявок", "Интерактивный макет для согласования сценария обработки заявок."],
+        analytics: ["Аналитика", "Внутри этого же каркаса можно собрать второй экран и связать переходы между ними."],
+        customers: ["Клиенты", "Так же можно готовить клиентские карточки, onboarding и другие flows."]
+      };
+      let currentFilter = "all";
+      let currentPage = "requests";
+      let selectedId = null;
+      const cards = document.getElementById("cards");
+      const filters = document.getElementById("filters");
+      const searchInput = document.getElementById("searchInput");
+      const pageTitle = document.getElementById("pageTitle");
+      const pageSubtitle = document.getElementById("pageSubtitle");
+      const drawerTitle = document.getElementById("drawerTitle");
+      const drawerText = document.getElementById("drawerText");
+      const timeline = document.getElementById("timeline");
+      const nav = document.getElementById("nav");
+      const toast = document.getElementById("toast");
+      const resetBtn = document.getElementById("resetBtn");
+      const saveBtn = document.getElementById("saveBtn");
+      const newBtn = document.getElementById("newBtn");
+      function getVisibleItems() {
+        const query = searchInput.value.trim().toLowerCase();
+        return items.filter((item) => {
+          const byFilter = currentFilter === "all" || item.state === currentFilter;
+          const bySearch = !query || `${item.title} ${item.customer}`.toLowerCase().includes(query);
+          return byFilter && bySearch;
+        });
+      }
+      function renderCards() {
+        const visible = getVisibleItems();
+        if (!visible.length) {
+          cards.innerHTML = `<div class="card"><h3>Ничего не найдено</h3><p>Здесь можно согласовать empty-state: текст, иллюстрацию и следующую CTA.</p></div>`;
+          return;
+        }
+        cards.innerHTML = visible.map((item) => {
+          const active = item.id === selectedId;
+          return `<article class="card" data-id="${item.id}" style="${active ? "border-color: rgba(15, 118, 110, 0.32); box-shadow: 0 12px 28px rgba(15, 118, 110, 0.12);" : ""}"><div class="card-top"><div><h3>${item.title}</h3><p>${item.customer}</p></div><span class="pill ${item.badge[0]}">${item.badge[1]}</span></div><div class="card-bottom"><span class="metric">${item.volume}</span><span class="metric">Открыть детали</span></div></article>`;
+        }).join("");
+        cards.querySelectorAll(".card[data-id]").forEach((card) => {
+          card.addEventListener("click", () => {
+            selectedId = Number(card.dataset.id);
+            syncDrawer();
+            renderCards();
+          });
+        });
+      }
+      function syncDrawer() {
+        const selected = items.find((item) => item.id === selectedId);
+        if (!selected) {
+          drawerTitle.textContent = "Выберите заявку";
+          drawerText.textContent = "Кликните по карточке слева. Здесь можно обсуждать, что должно происходить по нажатию кнопок и как меняются состояния интерфейса.";
+          timeline.innerHTML = `<div class="timeline-item"><strong>Шаг 1</strong><span>Открываем карточку заявки.</span></div><div class="timeline-item"><strong>Шаг 2</strong><span>Редактируем детали и сценарий перехода.</span></div>`;
+          return;
+        }
+        drawerTitle.textContent = selected.title;
+        drawerText.textContent = selected.description;
+        timeline.innerHTML = selected.timeline.map((step, index) => `<div class="timeline-item"><strong>Шаг ${index + 1}</strong><span>${step}</span></div>`).join("");
+      }
+      function syncPage() {
+        const [title, subtitle] = pageLabels[currentPage];
+        pageTitle.textContent = title;
+        pageSubtitle.textContent = subtitle;
+        nav.querySelectorAll("button").forEach((button) => {
+          button.setAttribute("aria-current", String(button.dataset.page === currentPage));
+        });
+      }
+      filters.querySelectorAll(".chip").forEach((chip) => {
+        chip.addEventListener("click", () => {
+          currentFilter = chip.dataset.filter;
+          filters.querySelectorAll(".chip").forEach((item) => item.setAttribute("aria-selected", String(item === chip)));
+          renderCards();
+        });
+      });
+      nav.querySelectorAll("button").forEach((button) => {
+        button.addEventListener("click", () => {
+          currentPage = button.dataset.page;
+          syncPage();
+        });
+      });
+      searchInput.addEventListener("input", renderCards);
+      resetBtn.addEventListener("click", () => {
+        currentFilter = "all";
+        selectedId = null;
+        searchInput.value = "";
+        filters.querySelectorAll(".chip").forEach((chip) => chip.setAttribute("aria-selected", String(chip.dataset.filter === "all")));
+        renderCards();
+        syncDrawer();
+      });
+      saveBtn.addEventListener("click", () => {
+        toast.classList.add("show");
+        setTimeout(() => toast.classList.remove("show"), 1800);
+      });
+      newBtn.addEventListener("click", () => {
+        drawerTitle.textContent = "Новая заявка";
+        drawerText.textContent = "Так можно имитировать переход в создание новой заявки без бэкенда: показываем нужную форму и сценарий по шагам.";
+        timeline.innerHTML = `<div class="timeline-item"><strong>Шаг 1</strong><span>Нажатие на кнопку открывает форму создания.</span></div><div class="timeline-item"><strong>Шаг 2</strong><span>После заполнения показываем экран success.</span></div>`;
+      });
+      syncPage();
+      renderCards();
+      syncDrawer();
+    </script>
+  </body>
+</html>
