@@ -241,20 +241,6 @@
             "Нужны ли доп. состояния и экраны"
           ]
         },
-        {
-          id: "request-workbench",
-          name: "Список заявок",
-          tag: "Demo",
-          path: "./mockups/request-workbench/index.html",
-          publishPath: "/mockups/request-workbench/",
-          description: "Пример интерактивного макета: фильтры, карточки, боковая панель и сохранение сценария.",
-          requirements: [
-            "Скрин или референс экрана",
-            "Что происходит по кликам",
-            "Нужные состояния и тексты",
-            "Нужна ли мобильная версия"
-          ]
-        }
       ];
       const list = document.getElementById("mockupList");
       const title = document.getElementById("title");
@@ -265,7 +251,7 @@
       const requirements = document.getElementById("requirements");
       const openLink = document.getElementById("openLink");
       const copyBtn = document.getElementById("copyBtn");
-      let selected = mockups[0];
+      let selected = mockups.find((mockup) => mockup.id === "courier-visits-mobile") || mockups[0];
       function renderList() {
         list.innerHTML = "";
         mockups.forEach((mockup) => {
