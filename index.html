@@ -176,7 +176,7 @@
             <p id="description">В этом окне будет live preview выбранного интерактивного экрана.</p>
           </div>
           <div class="actions">
-            <a class="btn btn-secondary" id="openLink" href="./mockups/courier-visits-mobile/index.html" target="_blank" rel="noopener noreferrer">Открыть отдельно</a>
+            <a class="btn btn-secondary" id="openLink" href="https://thegerid.github.io/mockup-pages/mockups/courier-visits-mobile/" target="_blank" rel="noopener noreferrer">Открыть отдельно</a>
             <button class="btn btn-primary" id="copyBtn" type="button">Скопировать путь</button>
           </div>
         </section>
@@ -211,7 +211,22 @@
       </main>
     </div>
     <script>
+      const publicBaseUrl = "https://thegerid.github.io/mockup-pages";
       const mockups = [
+        {
+          id: "delivery-exchange",
+          name: "Биржа доставок",
+          tag: "Client",
+          path: "./mockups/delivery-exchange/index.html",
+          publishPath: "/mockups/delivery-exchange/",
+          description: "Интерактивный экран настройки SLA и нагрузки биржи по продуктам и сменам.",
+          requirements: [
+            "Сохранение значений из инпутов",
+            "Включение и выключение блоков чекбоксами",
+            "Кликабельные верхние кнопки и табы",
+            "Поведение формы после нажатия «Сохранить»"
+          ]
+        },
         {
           id: "courier-visits-mobile",
           name: "Визиты курьера",
@@ -273,15 +288,16 @@
         description.textContent = selected.description;
         frame.src = selected.path;
         frameLabel.textContent = selected.path;
-        openLink.href = selected.path;
-        pathBox.textContent = `https://<your-user>.github.io/<repo>${selected.publishPath}`;
+        const publicUrl = `${publicBaseUrl}${selected.publishPath}`;
+        openLink.href = publicUrl;
+        pathBox.textContent = publicUrl;
         requirements.innerHTML = selected.requirements.map((item) => `<li>${item}</li>`).join("");
       }
       copyBtn.addEventListener("click", async () => {
         if (!selected) {
           return;
         }
-        const text = `${location.origin}${location.pathname.replace(/index\.html$/, "")}${selected.publishPath.replace(/^\//, "")}`;
+        const text = `${publicBaseUrl}${selected.publishPath}`;
         try {
           await navigator.clipboard.writeText(text);
           copyBtn.textContent = "Путь скопирован";

@@ -1,0 +1,780 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Макет: Биржа доставок</title>
+    <style>
+      :root {
+        --bg: #f5f6f8;
+        --panel: #f2f3f5;
+        --line: #d6dae2;
+        --text: #1c2f47;
+        --muted: #8f9cb0;
+        --tab: #f25b62;
+        --dark: #171b22;
+        --input: #f6f8fb;
+      }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: linear-gradient(180deg, #f9fafb, var(--bg));
+        color: var(--text);
+        overflow: hidden;
+      }
+      .viewport {
+        width: 100vw;
+        height: 100vh;
+        display: grid;
+        place-items: start center;
+        padding: 4px;
+      }
+      .stage {
+        position: relative;
+      }
+      .app {
+        width: min(860px, calc(100vw - 8px));
+        background: var(--panel);
+        border: 1px solid #e2e5eb;
+        border-radius: 8px;
+        overflow: hidden;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+      }
+      .head {
+        padding: 16px 18px 8px;
+      }
+      .head h1 {
+        margin: 0;
+        font-size: clamp(26px, 3.4vw, 42px);
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+      .head p {
+        margin: 2px 0 12px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .ghost {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #f8f9fb;
+        color: #27354a;
+        padding: 7px 11px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        cursor: pointer;
+      }
+      .ghost span { font-size: 14px; }
+      .tabs-wrap {
+        padding-top: 8px;
+      }
+      .tabs {
+        display: flex;
+        gap: 22px;
+        overflow-x: auto;
+        scrollbar-width: none;
+        border-bottom: 1px solid #d2d7df;
+      }
+      .tabs::-webkit-scrollbar { display: none; }
+      .tab-btn {
+        border: 0;
+        background: transparent;
+        color: #8b95a8;
+        font-size: 13px;
+        line-height: 1;
+        padding: 11px 0 10px;
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+        white-space: nowrap;
+      }
+      .tab-btn.active {
+        color: var(--tab);
+        border-bottom-color: var(--tab);
+      }
+      .content {
+        padding: 10px 12px 12px;
+        border-top: 1px solid #d8dde4;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        align-items: start;
+      }
+      .grid-column {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-width: 0;
+      }
+      .block {
+        border-bottom: 1px solid #d6dae1;
+        padding: 2px 4px 8px;
+        align-self: start;
+      }
+      .topline {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+      .topline h2 {
+        margin: 0;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        font-weight: 700;
+      }
+      .check {
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        border-radius: 4px;
+        background: #13161b;
+        border: 1px solid #13161b;
+        position: relative;
+        cursor: pointer;
+      }
+      .check::after {
+        content: "";
+        position: absolute;
+        inset: 2px 5px 5px 3px;
+        border-right: 1.5px solid #fff;
+        border-bottom: 1.5px solid #fff;
+        transform: rotate(40deg);
+      }
+      .check:indeterminate::after {
+        inset: 8px 4px auto;
+        height: 2px;
+        border: 0;
+        background: #fff;
+        transform: none;
+      }
+      .check:not(:checked) {
+        background: #ffffff;
+        border-color: #9fa8b8;
+      }
+      .check:not(:checked)::after { display: none; }
+      .row {
+        display: grid;
+        grid-template-columns: minmax(140px, 1fr) auto;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 5px;
+      }
+      .row label {
+        color: #5b6880;
+        font-size: 12px;
+        line-height: 1.25;
+      }
+      .caps {
+        margin: 7px 0 5px;
+        font-size: 12px;
+        text-transform: uppercase;
+        color: #95a0b3;
+        letter-spacing: 0.04em;
+        font-weight: 700;
+      }
+      .bullet::before {
+        content: "•";
+        margin-right: 6px;
+      }
+      .mini {
+        width: 52px;
+        border: 1px dashed #c7cdda;
+        border-radius: 6px;
+        background: var(--input);
+        color: #47556e;
+        padding: 3px 4px;
+        text-align: center;
+        font-size: 12px;
+      }
+      .mini:focus {
+        outline: none;
+        border-style: solid;
+        border-color: #8da9f2;
+      }
+      .mini.invalid {
+        border-style: solid;
+        border-color: #d53f3f;
+        background: #fff1f1;
+      }
+      .mini[type="number"] {
+        appearance: textfield;
+        -moz-appearance: textfield;
+      }
+      .mini[type="number"]::-webkit-outer-spin-button,
+      .mini[type="number"]::-webkit-inner-spin-button {
+        appearance: none;
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      .time-trigger {
+        width: 96px;
+        letter-spacing: 0.02em;
+        cursor: pointer;
+      }
+      .time-popup {
+        position: fixed;
+        z-index: 20;
+        width: 92px;
+        max-height: 168px;
+        overflow-y: auto;
+        background: #ffffff;
+        border: 1px solid #d6dae1;
+        border-radius: 8px;
+        box-shadow: 0 8px 20px rgba(20, 30, 45, 0.14);
+        padding: 4px;
+      }
+      .time-popup[hidden] {
+        display: none;
+      }
+      .time-option {
+        width: 100%;
+        border: 0;
+        background: transparent;
+        border-radius: 6px;
+        font-size: 12px;
+        color: #2c3b52;
+        text-align: center;
+        padding: 5px 6px;
+        cursor: pointer;
+      }
+      .time-option:hover,
+      .time-option.active {
+        background: #edf3ff;
+        color: #214a91;
+      }
+      .staff {
+        margin-top: -4px;
+        margin-bottom: 6px;
+        color: #95a2b4;
+        font-style: italic;
+        font-size: 11px;
+      }
+      .staff-inline {
+        margin-left: 12px;
+      }
+      .disabled {
+        opacity: 0.56;
+      }
+      .disabled .mini {
+        pointer-events: none;
+      }
+      .section-body { display: block; }
+      .block.collapsed .section-body { display: none; }
+      .block.collapsed {
+        padding-bottom: 2px;
+        margin-bottom: 0;
+      }
+      .block.collapsed .topline {
+        margin-bottom: 2px;
+      }
+      .foot {
+        border-top: 1px solid #d6dae2;
+        background: #f6f7f9;
+        padding: 10px 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .foot small {
+        font-size: 11px;
+        color: #8a94a5;
+      }
+      .save {
+        border: 0;
+        border-radius: 6px;
+        background: #171a20;
+        color: #fff;
+        font-weight: 700;
+        font-size: 13px;
+        padding: 8px 18px;
+        cursor: pointer;
+      }
+      .save:active { transform: translateY(1px); }
+      .toast {
+        position: fixed;
+        left: 50%;
+        bottom: 18px;
+        transform: translateX(-50%) translateY(12px);
+        opacity: 0;
+        background: rgba(22, 28, 37, 0.95);
+        color: #fff;
+        padding: 8px 12px;
+        border-radius: 12px;
+        font-size: 13px;
+        transition: 0.18s ease;
+        pointer-events: none;
+      }
+      .toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+      dialog {
+        width: min(420px, calc(100vw - 20px));
+        border: 0;
+        border-radius: 10px;
+        background: #fff;
+        padding: 12px;
+      }
+      dialog::backdrop { background: rgba(21, 24, 30, 0.45); }
+      dialog h3 {
+        margin: 0 0 10px;
+        font-size: 16px;
+      }
+      dialog p {
+        margin: 0 0 16px;
+        color: #647286;
+        font-size: 13px;
+        line-height: 1.4;
+      }
+      .dialog-close {
+        border: 0;
+        border-radius: 6px;
+        background: #1a1f27;
+        color: #fff;
+        font-size: 13px;
+        padding: 6px 12px;
+      }
+      @media (max-width: 760px) {
+        .grid { grid-template-columns: 1fr; }
+        .grid-column { gap: 8px; }
+        .foot { align-items: flex-start; flex-direction: column; }
+        .save { width: 100%; }
+      }
+      @media (max-width: 560px) {
+        .head { padding: 12px 10px 6px; }
+        .tab-btn { font-size: 12px; }
+        .ghost { font-size: 13px; }
+        .ghost span, .staff, .row label, .caps, .foot small { font-size: 11px; }
+        .topline h2 { font-size: 12px; }
+        .mini { width: 48px; font-size: 11px; padding: 2px 3px; }
+        .save { font-size: 12px; }
+        .head h1 { font-size: 22px; }
+        .head p { font-size: 12px; }
+        .toast { font-size: 12px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="viewport">
+      <div class="stage" id="stage">
+    <div class="app" id="mockupRoot">
+      <header class="head">
+        <h1>Москва Алтуфьево</h1>
+        <p>UTC+3:00, Москва</p>
+        <div class="actions">
+          <button class="ghost" type="button" data-dialog="settings">⌂ <span>Настройки ЛЦ</span></button>
+          <button class="ghost" type="button" data-dialog="zone">⌖ <span>Зона доставки</span></button>
+        </div>
+        <div class="tabs-wrap">
+          <div class="tabs">
+            <button class="tab-btn" type="button" data-tab="products">Продукты</button>
+            <button class="tab-btn" type="button" data-tab="intervals">Интервалы</button>
+            <button class="tab-btn" type="button" data-tab="to">ТО</button>
+            <button class="tab-btn" type="button" data-tab="urgent">Срочная доставка</button>
+            <button class="tab-btn active" type="button" data-tab="exchange">Биржа</button>
+            <button class="tab-btn" type="button" data-tab="other">Прочее</button>
+          </div>
+        </div>
+      </header>
+
+      <main class="content">
+        <div class="grid">
+          <div class="grid-column">
+            <section class="block" data-section data-kind="stream" data-stream="rb">
+              <div class="topline">
+                <input class="check" type="checkbox" checked />
+                <h2>ПРОДУКТЫ РБ</h2>
+              </div>
+              <div class="row">
+                <label>Крайнее время заказа:</label>
+                <input class="mini time-trigger" data-time-trigger type="text" value="18:00" readonly />
+              </div>
+              <div class="row">
+                <label>SLA (до автоназначения, мин. Для ТО):</label>
+                <input class="mini" type="number" min="0" step="5" value="240" />
+              </div>
+              <p class="caps">МАКС. БРОНЕЙ НА МБ:</p>
+              <div class="row">
+                <label class="bullet">В смене:</label>
+                <input class="mini" type="number" min="0" step="1" value="10" />
+              </div>
+              <div class="row">
+                <label class="bullet">Вне смены:</label>
+                <input class="mini" type="number" min="0" step="1" value="20" />
+              </div>
+            </section>
+
+            <section class="block" data-section data-kind="product" data-stream="rb">
+              <div class="topline">
+                <input class="check" type="checkbox" checked />
+                <h2>Дебетовая карта</h2>
+              </div>
+              <p class="staff">Сотрудников в смене: 12 <span class="staff-inline">На бирже сейчас: 8</span></p>
+              <div class="section-body">
+                <div class="row">
+                  <label>SLA ДО 1-ГО ЗВОНКА (МИН. ДЛЯ Т+1):</label>
+                  <input class="mini" type="number" min="0" step="5" value="60" />
+                </div>
+              </div>
+            </section>
+
+            <section class="block" data-section data-kind="product" data-stream="rb">
+              <div class="topline">
+                <input class="check" type="checkbox" checked />
+                <h2>Кредитная карта</h2>
+              </div>
+              <p class="staff">Сотрудников в смене: 8 <span class="staff-inline">На бирже сейчас: 14</span></p>
+              <div class="section-body">
+                <div class="row">
+                  <label>SLA ДО 1-ГО ЗВОНКА (МИН. ДЛЯ Т+1):</label>
+                  <input class="mini" type="number" min="0" step="5" value="120" />
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div class="grid-column">
+            <section class="block" data-section data-kind="stream" data-stream="mmb">
+              <div class="topline">
+                <input class="check" type="checkbox" checked />
+                <h2>ПРОДУКТЫ ММБ</h2>
+              </div>
+              <div class="row">
+                <label>Крайнее время заказа:</label>
+                <input class="mini time-trigger" data-time-trigger type="text" value="16:00" readonly />
+              </div>
+              <div class="row">
+                <label>SLA (до автоназначения, мин. Для ТО):</label>
+                <input class="mini" type="number" min="0" step="5" value="480" />
+              </div>
+              <p class="caps">МАКС. БРОНЕЙ НА МБ:</p>
+              <div class="row">
+                <label class="bullet">В смене:</label>
+                <input class="mini" type="number" min="0" step="1" value="10" />
+              </div>
+              <div class="row">
+                <label class="bullet">Вне смены:</label>
+                <input class="mini" type="number" min="0" step="1" value="20" />
+              </div>
+            </section>
+
+            <section class="block" data-section data-kind="product" data-stream="mmb">
+              <div class="topline">
+                <input class="check" type="checkbox" checked />
+                <h2>РКО</h2>
+              </div>
+              <p class="staff">Сотрудников в смене: 4 <span class="staff-inline">На бирже сейчас: 3</span></p>
+              <div class="section-body">
+                <div class="row">
+                  <label>SLA ДО 1-ГО ЗВОНКА (МИН. ДЛЯ Т+1):</label>
+                  <input class="mini" type="number" min="0" step="5" value="120" />
+                </div>
+              </div>
+            </section>
+
+            <section class="block" data-section data-kind="product" data-stream="mmb">
+              <div class="topline">
+                <input class="check" type="checkbox" checked />
+                <h2>Торговый эквайринг</h2>
+              </div>
+              <p class="staff">Сотрудников в смене: 2 <span class="staff-inline">На бирже сейчас: 0</span></p>
+              <div class="section-body">
+                <div class="row">
+                  <label>SLA ДО 1-ГО ЗВОНКА (МИН. ДЛЯ Т+1):</label>
+                  <input class="mini" type="number" min="0" step="5" value="60" />
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+
+      <footer class="foot">
+        <small id="hint"></small>
+        <button class="save" id="saveBtn" type="button">Сохранить</button>
+      </footer>
+    </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+    <div class="time-popup" id="timePopup" hidden></div>
+    <dialog id="dialog">
+      <h3 id="dialogTitle"></h3>
+      <p id="dialogText"></p>
+      <button class="dialog-close" id="dialogClose" type="button">Закрыть</button>
+    </dialog>
+
+    <script>
+      const toast = document.getElementById("toast");
+      const saveBtn = document.getElementById("saveBtn");
+      const hint = document.getElementById("hint");
+      const timePopup = document.getElementById("timePopup");
+      const timeTriggers = [...document.querySelectorAll("[data-time-trigger]")];
+      const tabs = [...document.querySelectorAll(".tab-btn")];
+      const sections = [...document.querySelectorAll("[data-section]")];
+      const streamSections = sections.filter((section) => section.dataset.kind === "stream");
+      const productSections = sections.filter((section) => section.dataset.kind === "product");
+      const dialog = document.getElementById("dialog");
+      const dialogTitle = document.getElementById("dialogTitle");
+      const dialogText = document.getElementById("dialogText");
+      const dialogClose = document.getElementById("dialogClose");
+      const timeValues = Array.from({ length: 15 }, (_, index) => `${String(index + 8).padStart(2, "0")}:00`);
+      let activeTimeTrigger = null;
+
+      const dialogContent = {
+        settings: {
+          title: "Настройки ЛЦ",
+          text: "В интерактивном макете здесь можно открыть параметры лимитов, SLA по продуктам и сменам сотрудников."
+        },
+        zone: {
+          title: "Зона доставки",
+          text: "В демо можно добавить карту зоны, интервал доставки и список доступных курьеров по локациям."
+        }
+      };
+
+      const showToast = (text) => {
+        toast.textContent = text;
+        toast.classList.add("show");
+        clearTimeout(showToast.timer);
+        showToast.timer = setTimeout(() => toast.classList.remove("show"), 1600);
+      };
+
+      const closeTimePopup = () => {
+        timePopup.hidden = true;
+        activeTimeTrigger = null;
+      };
+
+      const openTimePopup = (input) => {
+        activeTimeTrigger = input;
+        const rect = input.getBoundingClientRect();
+        const popupWidth = 92;
+        const popupHeight = 176;
+        const left = Math.min(Math.max(8, rect.left), window.innerWidth - popupWidth - 8);
+        const top = Math.min(rect.bottom + 4, window.innerHeight - popupHeight - 8);
+
+        timePopup.style.left = `${left}px`;
+        timePopup.style.top = `${Math.max(8, top)}px`;
+        timePopup.hidden = false;
+
+        timePopup.querySelectorAll(".time-option").forEach((button) => {
+          button.classList.toggle("active", button.dataset.value === input.value);
+        });
+      };
+
+      const renderTimePopup = () => {
+        timePopup.innerHTML = timeValues
+          .map((value) => `<button class="time-option" type="button" data-value="${value}">${value}</button>`)
+          .join("");
+
+        timePopup.querySelectorAll(".time-option").forEach((button) => {
+          button.addEventListener("click", () => {
+            if (!activeTimeTrigger) {
+              return;
+            }
+            activeTimeTrigger.value = button.dataset.value;
+            activeTimeTrigger.classList.remove("invalid");
+            closeTimePopup();
+          });
+        });
+      };
+
+      const getSectionCheckbox = (section) => section.querySelector(".check");
+
+      const clearInputValidation = (input) => {
+        input.classList.remove("invalid");
+      };
+
+      const clearSectionValidation = (section) => {
+        section.querySelectorAll(".mini").forEach(clearInputValidation);
+      };
+
+      const syncStreamCheckbox = (streamId) => {
+        const streamSection = streamSections.find((section) => section.dataset.stream === streamId);
+        if (!streamSection) {
+          return;
+        }
+        const streamCheckbox = getSectionCheckbox(streamSection);
+        const streamProducts = productSections.filter((section) => section.dataset.stream === streamId);
+        const checkedProducts = streamProducts.filter((section) => getSectionCheckbox(section).checked).length;
+
+        if (checkedProducts === 0) {
+          streamCheckbox.checked = false;
+          streamCheckbox.indeterminate = false;
+          return;
+        }
+        if (checkedProducts === streamProducts.length) {
+          streamCheckbox.checked = true;
+          streamCheckbox.indeterminate = false;
+          return;
+        }
+        streamCheckbox.checked = true;
+        streamCheckbox.indeterminate = true;
+      };
+
+      const applyStreamToProducts = (streamSection) => {
+        const streamId = streamSection.dataset.stream;
+        const streamChecked = getSectionCheckbox(streamSection).checked;
+
+        getSectionCheckbox(streamSection).indeterminate = false;
+        productSections
+          .filter((section) => section.dataset.stream === streamId)
+          .forEach((section) => {
+            const checkbox = getSectionCheckbox(section);
+            checkbox.checked = streamChecked;
+            clearSectionValidation(section);
+          });
+      };
+
+      const refreshSectionState = () => {
+        sections.forEach((section) => {
+          const checkbox = getSectionCheckbox(section);
+          section.classList.toggle("disabled", !checkbox.checked);
+          if (section.dataset.kind === "product") {
+            section.classList.toggle("collapsed", !checkbox.checked);
+          }
+        });
+
+        if (activeTimeTrigger && activeTimeTrigger.closest(".disabled")) {
+          closeTimePopup();
+        }
+      };
+
+      tabs.forEach((button) => {
+        button.addEventListener("click", () => {
+          if (button.dataset.tab !== "exchange") {
+            showToast("В этом демо отрисована только вкладка «Биржа»");
+            return;
+          }
+          tabs.forEach((tab) => tab.classList.remove("active"));
+          button.classList.add("active");
+        });
+      });
+
+      sections.forEach((section) => {
+        const checkbox = getSectionCheckbox(section);
+        checkbox.addEventListener("change", () => {
+          if (section.dataset.kind === "stream") {
+            applyStreamToProducts(section);
+          } else if (section.dataset.kind === "product") {
+            syncStreamCheckbox(section.dataset.stream);
+            clearSectionValidation(section);
+          }
+          refreshSectionState();
+        });
+      });
+
+      document.querySelectorAll(".mini").forEach((input) => {
+        input.addEventListener("input", () => clearInputValidation(input));
+        input.addEventListener("change", () => clearInputValidation(input));
+      });
+
+      renderTimePopup();
+
+      timeTriggers.forEach((input) => {
+        input.addEventListener("click", (event) => {
+          event.stopPropagation();
+          if (input.closest(".disabled")) {
+            return;
+          }
+          if (activeTimeTrigger === input && !timePopup.hidden) {
+            closeTimePopup();
+            return;
+          }
+          openTimePopup(input);
+        });
+        input.addEventListener("keydown", (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            if (!input.closest(".disabled")) {
+              openTimePopup(input);
+            }
+          }
+          if (event.key === "Escape") {
+            closeTimePopup();
+          }
+        });
+      });
+
+      document.addEventListener("click", (event) => {
+        if (timePopup.hidden) {
+          return;
+        }
+        if (timePopup.contains(event.target)) {
+          return;
+        }
+        if (event.target.closest("[data-time-trigger]")) {
+          return;
+        }
+        closeTimePopup();
+      });
+
+      window.addEventListener("resize", closeTimePopup);
+
+      document.querySelectorAll("[data-dialog]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const key = button.dataset.dialog;
+          const config = dialogContent[key];
+          if (!config) {
+            return;
+          }
+          dialogTitle.textContent = config.title;
+          dialogText.textContent = config.text;
+          dialog.showModal();
+        });
+      });
+
+      dialogClose.addEventListener("click", () => dialog.close());
+
+      saveBtn.addEventListener("click", () => {
+        const activeInputs = sections
+          .filter((section) => getSectionCheckbox(section).checked)
+          .flatMap((section) => [...section.querySelectorAll(".mini")]);
+        const invalidInputs = [];
+
+        activeInputs.forEach((input) => {
+          const value = input.value.trim();
+          let isInvalid = value === "";
+
+          if (!isInvalid && input.type === "number") {
+            const numericValue = Number(value);
+            isInvalid = !Number.isFinite(numericValue) || numericValue < 0;
+          }
+
+          input.classList.toggle("invalid", isInvalid);
+          if (isInvalid) {
+            invalidInputs.push(input);
+          }
+        });
+
+        if (invalidInputs.length > 0) {
+          hint.textContent = "Заполните обязательные поля. Ошибки отмечены красным.";
+          showToast("Ошибка: не заполнены обязательные поля");
+          invalidInputs[0].focus();
+          return;
+        }
+
+        hint.textContent = "Настройки сохранены успешно.";
+        showToast("Настройки сохранены успешно");
+      });
+
+      streamSections.forEach((section) => syncStreamCheckbox(section.dataset.stream));
+      refreshSectionState();
+    </script>
+  </body>
+</html>
