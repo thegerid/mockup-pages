@@ -2,7 +2,7 @@
 <html lang="ru">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Макет: Биржа доставок</title>
     <style>
       :root {
@@ -29,20 +29,22 @@
         width: 100vw;
         height: 100vh;
         display: grid;
-        place-items: start center;
+        place-items: center;
         padding: 4px;
       }
       .stage {
         position: relative;
       }
       .app {
-        width: min(860px, calc(100vw - 8px));
+        width: 860px;
         background: var(--panel);
         border: 1px solid #e2e5eb;
         border-radius: 8px;
         overflow: hidden;
         display: grid;
         grid-template-rows: auto 1fr auto;
+        transform-origin: top left;
+        will-change: transform;
       }
       .head {
         padding: 16px 18px 8px;
@@ -349,24 +351,6 @@
         font-size: 13px;
         padding: 6px 12px;
       }
-      @media (max-width: 760px) {
-        .grid { grid-template-columns: 1fr; }
-        .grid-column { gap: 8px; }
-        .foot { align-items: flex-start; flex-direction: column; }
-        .save { width: 100%; }
-      }
-      @media (max-width: 560px) {
-        .head { padding: 12px 10px 6px; }
-        .tab-btn { font-size: 12px; }
-        .ghost { font-size: 13px; }
-        .ghost span, .staff, .row label, .caps, .foot small { font-size: 11px; }
-        .topline h2 { font-size: 12px; }
-        .mini { width: 48px; font-size: 11px; padding: 2px 3px; }
-        .save { font-size: 12px; }
-        .head h1 { font-size: 22px; }
-        .head p { font-size: 12px; }
-        .toast { font-size: 12px; }
-      }
     </style>
   </head>
   <body>
@@ -524,6 +508,8 @@
       const toast = document.getElementById("toast");
       const saveBtn = document.getElementById("saveBtn");
       const hint = document.getElementById("hint");
+      const stage = document.getElementById("stage");
+      const mockupRoot = document.getElementById("mockupRoot");
       const timePopup = document.getElementById("timePopup");
       const timeTriggers = [...document.querySelectorAll("[data-time-trigger]")];
       const tabs = [...document.querySelectorAll(".tab-btn")];
@@ -558,6 +544,21 @@
       const closeTimePopup = () => {
         timePopup.hidden = true;
         activeTimeTrigger = null;
+      };
+
+      const fitDesktopCanvas = () => {
+        mockupRoot.style.transform = "none";
+        const width = mockupRoot.offsetWidth;
+        const height = mockupRoot.offsetHeight;
+        const scale = Math.min(
+          (window.innerWidth - 8) / width,
+          (window.innerHeight - 8) / height,
+          1
+        );
+
+        mockupRoot.style.transform = `scale(${scale})`;
+        stage.style.width = `${Math.round(width * scale)}px`;
+        stage.style.height = `${Math.round(height * scale)}px`;
       };
 
       const openTimePopup = (input) => {
@@ -725,6 +726,8 @@
       });
 
       window.addEventListener("resize", closeTimePopup);
+      window.addEventListener("resize", fitDesktopCanvas);
+      window.addEventListener("orientationchange", fitDesktopCanvas);
 
       document.querySelectorAll("[data-dialog]").forEach((button) => {
         button.addEventListener("click", () => {
@@ -775,6 +778,7 @@
 
       streamSections.forEach((section) => syncStreamCheckbox(section.dataset.stream));
       refreshSectionState();
+      fitDesktopCanvas();
     </script>
   </body>
 </html>
