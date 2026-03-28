@@ -3,7 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Mockup Pages</title>
+    <title>Макеты для проектов</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <style>
       :root {
         --bg: #f3f5f8;
@@ -154,13 +155,13 @@
     <div class="layout">
       <aside class="sidebar">
         <div class="brand">
-          <h1>Mockup Pages</h1>
-          <p>Р›РѕРєР°Р»СЊРЅС‹Р№ showroom РґР»СЏ РёРЅС‚РµСЂР°РєС‚РёРІРЅС‹С… РјР°РєРµС‚РѕРІ. Р­С‚РѕС‚ Р¶Рµ РЅР°Р±РѕСЂ СЃС‚СЂР°РЅРёС† РјРѕР¶РЅРѕ РїСѓР±Р»РёРєРѕРІР°С‚СЊ РЅР° GitHub Pages Рё РѕС‚РґР°РІР°С‚СЊ Р·Р°РєР°Р·С‡РёРєСѓ РѕРґРЅРѕР№ СЃСЃС‹Р»РєРѕР№.</p>
+          <h1>Макеты для проектов</h1>
+          <p>Локальный showroom для интерактивных макетов. Этот же набор страниц можно публиковать на GitHub Pages и отдавать заказчику одной ссылкой.</p>
         </div>
         <div class="meta">
           <div class="meta-card">
-            <strong>РљРѕРЅС‚Р°РєС‚С‹</strong>
-            <span>Р”РµРјРёРґРµРЅРєРѕ Р“РµСЂРјР°РЅ РњРёС…Р°Р№Р»РѕРІРёС‡<br>Telegram: <a href="https://t.me/demidenca" target="_blank" rel="noopener noreferrer">@demidenca</a><br>Email: gdemidenko@alfabank.ru</span>
+            <strong>Контакты</strong>
+            <span>Демиденко Герман Михайлович<br>Telegram: <a href="https://t.me/demidenca" target="_blank" rel="noopener noreferrer">@demidenca</a><br>Email: gdemidenko@alfabank.ru</span>
           </div>
         </div>
         <div class="mockup-list" id="mockupList"></div>
@@ -168,12 +169,12 @@
       <main class="content">
         <section class="toolbar">
           <div class="toolbar-main">
-            <h2 id="title">Р’С‹Р±РµСЂРёС‚Рµ РјР°РєРµС‚</h2>
-            <p id="description">Р’ СЌС‚РѕРј РѕРєРЅРµ Р±СѓРґРµС‚ live preview РІС‹Р±СЂР°РЅРЅРѕРіРѕ РёРЅС‚РµСЂР°РєС‚РёРІРЅРѕРіРѕ СЌРєСЂР°РЅР°.</p>
+            <h2 id="title">Выберите макет</h2>
+            <p id="description">В этом окне будет live preview выбранного интерактивного экрана.</p>
           </div>
           <div class="actions">
-            <a class="btn btn-secondary" id="openLink" href="https://xn--80akhjhbm1b7e.xn--p1ai/mockups/dcni/" target="_blank" rel="noopener noreferrer">РћС‚РєСЂС‹С‚СЊ РѕС‚РґРµР»СЊРЅРѕ</a>
-            <button class="btn btn-primary" id="copyBtn" type="button">РЎРєРѕРїРёСЂРѕРІР°С‚СЊ РїСѓС‚СЊ</button>
+            <a class="btn btn-secondary" id="openLink" href="https://xn--80akhjhbm1b7e.xn--p1ai/mockups/dcni/" target="_blank" rel="noopener noreferrer">Открыть отдельно</a>
+            <button class="btn btn-primary" id="copyBtn" type="button">Скопировать путь</button>
           </div>
         </section>
         <section class="preview">
@@ -186,20 +187,20 @@
           </div>
           <aside class="notes">
             <section>
-              <h3>РЎСЃС‹Р»РєР° РґР»СЏ РїСѓР±Р»РёРєР°С†РёРё</h3>
-              <div class="path" id="publishedPath">РЎРЅР°С‡Р°Р»Р° РІС‹Р±РµСЂРёС‚Рµ РјР°РєРµС‚</div>
+              <h3>Ссылка для публикации</h3>
+              <div class="path" id="publishedPath">Сначала выберите макет</div>
             </section>
             <section>
-              <h4>Р§С‚Рѕ РјРѕР¶РЅРѕ СЃРѕРіР»Р°СЃРѕРІС‹РІР°С‚СЊ</h4>
+              <h4>Что можно согласовывать</h4>
               <ul>
-                <li>РІРЅРµС€РЅРёР№ РІРёРґ СЌРєСЂР°РЅРѕРІ Рё Р±Р»РѕРєРѕРІ</li>
-                <li>РєР»РёРєРё, С‚Р°Р±С‹, РјРѕРґР°Р»РєРё, drawer, toast</li>
-                <li>СЃРѕСЃС‚РѕСЏРЅРёСЏ loading, empty, error, success</li>
-                <li>РјРѕР±РёР»СЊРЅСѓСЋ Рё РґРµСЃРєС‚РѕРїРЅСѓСЋ РІРµСЂСЃРёРё</li>
+                <li>внешний вид экранов и блоков</li>
+                <li>клики, табы, модалки, drawer, toast</li>
+                <li>состояния loading, empty, error, success</li>
+                <li>мобильную и десктопную версии</li>
               </ul>
             </section>
             <section>
-              <h4>Р¤РѕСЂРјР°С‚ РїРѕСЃС‚Р°РЅРѕРІРєРё</h4>
+              <h4>Формат постановки</h4>
               <ul id="requirements"></ul>
             </section>
           </aside>
@@ -211,30 +212,30 @@
       const mockups = [
         {
           id: "delivery-exchange",
-          name: "Р‘РёСЂР¶Р° РґРѕСЃС‚Р°РІРѕРє",
+          name: "Биржа доставок",
           tag: "Client",
           path: "./mockups/delivery-exchange/index.html",
           publishPath: "/mockups/delivery-exchange/",
-          description: "РРЅС‚РµСЂР°РєС‚РёРІРЅС‹Р№ СЌРєСЂР°РЅ РЅР°СЃС‚СЂРѕР№РєРё SLA Рё РЅР°РіСЂСѓР·РєРё Р±РёСЂР¶Рё РїРѕ РїСЂРѕРґСѓРєС‚Р°Рј Рё СЃРјРµРЅР°Рј.",
+          description: "Интерактивный экран настройки SLA и нагрузки биржи по продуктам и сменам.",
           requirements: [
-            "РЎРѕС…СЂР°РЅРµРЅРёРµ Р·РЅР°С‡РµРЅРёР№ РёР· РёРЅРїСѓС‚РѕРІ",
-            "Р’РєР»СЋС‡РµРЅРёРµ Рё РІС‹РєР»СЋС‡РµРЅРёРµ Р±Р»РѕРєРѕРІ С‡РµРєР±РѕРєСЃР°РјРё",
-            "РљР»РёРєР°Р±РµР»СЊРЅС‹Рµ РІРµСЂС…РЅРёРµ РєРЅРѕРїРєРё Рё С‚Р°Р±С‹",
-            "РџРѕРІРµРґРµРЅРёРµ С„РѕСЂРјС‹ РїРѕСЃР»Рµ РЅР°Р¶Р°С‚РёСЏ В«РЎРѕС…СЂР°РЅРёС‚СЊВ»"
+            "Сохранение значений из инпутов",
+            "Включение и выключение блоков чекбоксами",
+            "Кликабельные верхние кнопки и табы",
+            "Поведение формы после нажатия «Сохранить»"
           ]
         },
         {
           id: "dcni",
-          name: "Р’С‹РґР°С‡Р° РїСЂРѕРґСѓРєС‚Р° DCNI",
+          name: "Выдача продукта DCNI",
           tag: "Client",
           path: "./mockups/dcni/index.html",
           publishPath: "/mockups/dcni/",
-          description: "РњРѕР±РёР»СЊРЅС‹Р№ СЃС†РµРЅР°СЂРёР№ РІС‹РґР°С‡Рё РїСЂРѕРґСѓРєС‚Р° DCNI: СЃРїРёСЃРѕРє РІСЃС‚СЂРµС‡, РІС‹Р±РѕСЂ РєР°СЂС‚С‹, SMS-РїРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ Рё Р·Р°РІРµСЂС€РµРЅРёРµ РІС‹РґР°С‡Рё.",
+          description: "Мобильный сценарий выдачи продукта DCNI: список встреч, выбор карты, SMS-подтверждение и завершение выдачи.",
           requirements: [
-            "РЎРїРёСЃРѕРє Р°РєС‚РёРІРЅС‹С…, СЃРѕРіР»Р°СЃРѕРІР°РЅРЅС‹С… Рё Р·Р°РІРµСЂС€РµРЅРЅС‹С… РІСЃС‚СЂРµС‡",
-            "РџРµСЂРµС…РѕРґ РІ РІС‹РґР°С‡Сѓ РєР°СЂС‚С‹ Рё РІС‹Р±РѕСЂ РїСЂРѕРґСѓРєС‚Р° РёР· РїРѕРёСЃРєР°",
-            "SMS-РїРѕРґС‚РІРµСЂР¶РґРµРЅРёРµ С„Р°РєС‚Р° РїРµСЂРµРґР°С‡Рё РїСЂРѕРґСѓРєС‚Р°",
-            "Р¤РёРєСЃР°С†РёСЏ С„РѕС‚Рѕ welcome-pack Рё СЌРєСЂР°РЅ СѓСЃРїРµС€РЅРѕРіРѕ Р·Р°РІРµСЂС€РµРЅРёСЏ"
+            "Список активных, согласованных и завершенных встреч",
+            "Переход в выдачу карты и выбор продукта из поиска",
+            "SMS-подтверждение факта передачи продукта",
+            "Фиксация фото welcome-pack и экран успешного завершения"
           ]
         },
       ];
@@ -282,15 +283,16 @@
         const text = `${publicBaseUrl}${selected.publishPath}`;
         try {
           await navigator.clipboard.writeText(text);
-          copyBtn.textContent = "РџСѓС‚СЊ СЃРєРѕРїРёСЂРѕРІР°РЅ";
-          setTimeout(() => { copyBtn.textContent = "РЎРєРѕРїРёСЂРѕРІР°С‚СЊ РїСѓС‚СЊ"; }, 1200);
+          copyBtn.textContent = "Путь скопирован";
+          setTimeout(() => { copyBtn.textContent = "Скопировать путь"; }, 1200);
         } catch {
-          copyBtn.textContent = "РќРµ СѓРґР°Р»РѕСЃСЊ";
-          setTimeout(() => { copyBtn.textContent = "РЎРєРѕРїРёСЂРѕРІР°С‚СЊ РїСѓС‚СЊ"; }, 1200);
+          copyBtn.textContent = "Не удалось";
+          setTimeout(() => { copyBtn.textContent = "Скопировать путь"; }, 1200);
         }
       });
       syncView();
     </script>
   </body>
 </html>
+
 
