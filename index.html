@@ -285,7 +285,15 @@
       const copyBtn = document.getElementById("copyBtn");
       const projectActions = Array.from(document.querySelectorAll(".project-action"));
 
+      const isLocalShowroom = location.protocol === "file:" || /^(localhost|127\\.0\\.0\\.1)$/i.test(location.hostname);
       openShowroomLink.href = `${publicBaseUrl}/`;
+      if (isLocalShowroom) {
+        openShowroomLink.textContent = "Открыть шоурум";
+        openShowroomLink.target = "_blank";
+      } else {
+        openShowroomLink.textContent = "На главную";
+        openShowroomLink.target = "_self";
+      }
 
       let selected = null;
 
@@ -343,6 +351,15 @@
           copyBtn.textContent = "Не удалось";
           setTimeout(() => { copyBtn.textContent = "Скопировать путь"; }, 1200);
         }
+      });
+
+      openShowroomLink.addEventListener("click", (e) => {
+        if (isLocalShowroom) return;
+        if (location.pathname !== "/" && !location.pathname.endsWith("/index.html")) return;
+        e.preventDefault();
+        selected = null;
+        syncView();
+        window.scrollTo({ top: 0, behavior: "smooth" });
       });
 
       syncView();
