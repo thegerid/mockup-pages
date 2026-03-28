@@ -37,7 +37,7 @@
       .brand { margin-bottom: 24px; }
       .brand h1 { margin: 0 0 8px; font-size: 28px; line-height: 1; }
       .brand p { margin: 0; color: var(--muted); line-height: 1.5; }
-      .meta { display: grid; gap: 12px; margin-bottom: 22px; }
+      .meta { display: grid; gap: 12px; }
       .meta-card {
         padding: 14px 16px;
         border: 1px solid var(--line);
@@ -46,13 +46,34 @@
       }
       .meta-card strong { display: block; margin-bottom: 4px; }
       .meta-card span { color: var(--muted); font-size: 14px; line-height: 1.5; }
-      .mockup-list { display: grid; gap: 12px; }
+
+      .content { padding: 24px; display: grid; gap: 18px; }
+      .project-picker {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 18px 22px;
+        display: grid;
+        gap: 16px;
+      }
+      .project-picker h3 {
+        margin: 0;
+        font-size: 18px;
+      }
+      .mockup-list {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(auto-fill, minmax(230px, 260px));
+        justify-content: start;
+        align-items: start;
+      }
       .mockup-card {
         width: 100%;
         border: 1px solid var(--line);
         border-radius: 18px;
         background: var(--panel);
-        padding: 16px;
+        padding: 12px 14px;
         text-align: left;
         cursor: pointer;
         transition: 160ms ease;
@@ -76,21 +97,19 @@
       }
       .mockup-card strong { display: block; margin-bottom: 6px; font-size: 16px; }
       .mockup-card span { display: block; color: var(--muted); font-size: 14px; line-height: 1.45; }
-      .content { padding: 24px; display: grid; gap: 18px; }
+
       .toolbar {
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: 18px 22px;
-        background: var(--panel);
-        border: 1px solid var(--line);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--line);
       }
       .toolbar-main { flex: 1; }
       .toolbar-main h2 { margin: 0 0 6px; font-size: 22px; }
       .toolbar-main p { margin: 0; color: var(--muted); }
       .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+      .project-action.is-hidden { display: none; }
       .btn {
         appearance: none;
         border: 0;
@@ -101,6 +120,7 @@
       }
       .btn-primary { background: var(--accent); color: #fff; }
       .btn-secondary { background: #edf2f7; color: var(--text); }
+
       .preview { display: grid; grid-template-columns: 1fr 320px; gap: 18px; }
       .frame-shell, .notes {
         background: var(--panel);
@@ -125,8 +145,8 @@
       iframe {
         display: block;
         width: 100%;
-        height: calc(100vh - 180px);
-        min-height: 680px;
+        height: calc(100vh - 260px);
+        min-height: 620px;
         border: 0;
         border-radius: 0 0 var(--radius) var(--radius);
         background: #fff;
@@ -144,10 +164,12 @@
         font-size: 13px;
         word-break: break-all;
       }
+
       @media (max-width: 1100px) { .preview { grid-template-columns: 1fr; } }
       @media (max-width: 900px) {
         .layout { grid-template-columns: 1fr; }
         .sidebar { border-right: 0; border-bottom: 1px solid rgba(217, 226, 236, 0.9); }
+        .mockup-list { grid-template-columns: 1fr; }
       }
     </style>
   </head>
@@ -163,32 +185,42 @@
             <strong>Контакты</strong>
             <span>Демиденко Герман Михайлович<br>Telegram: <a href="https://t.me/demidenca" target="_blank" rel="noopener noreferrer">@demidenca</a><br>Email: gdemidenko@alfabank.ru</span>
           </div>
+          <div class="meta-card">
+            <strong>Как открыть проект</strong>
+            <span>Выберите карточку проекта в центральном блоке. После выбора откроется preview в этом же окне.</span>
+          </div>
         </div>
-        <div class="mockup-list" id="mockupList"></div>
       </aside>
+
       <main class="content">
-        <section class="toolbar">
-          <div class="toolbar-main">
-            <h2 id="title">Выберите макет</h2>
-            <p id="description">В этом окне будет live preview выбранного интерактивного экрана.</p>
+        <section class="project-picker">
+          <div class="toolbar">
+            <div class="toolbar-main">
+              <h2 id="title">Выберите проект</h2>
+              <p id="description">Проект откроется в окне preview ниже.</p>
+            </div>
+            <div class="actions">
+              <a class="btn btn-secondary" id="openShowroomLink" href="https://xn--80akhjhbm1b7e.xn--p1ai/" target="_blank" rel="noopener noreferrer">Открыть шоурум</a>
+              <a class="btn btn-secondary project-action is-hidden" id="openLink" href="https://xn--80akhjhbm1b7e.xn--p1ai/" target="_blank" rel="noopener noreferrer">Открыть отдельно</a>
+              <button class="btn btn-primary project-action is-hidden" id="copyBtn" type="button">Скопировать путь</button>
+            </div>
           </div>
-          <div class="actions">
-            <a class="btn btn-secondary" id="openLink" href="https://xn--80akhjhbm1b7e.xn--p1ai/mockups/dcni/" target="_blank" rel="noopener noreferrer">Открыть отдельно</a>
-            <button class="btn btn-primary" id="copyBtn" type="button">Скопировать путь</button>
-          </div>
+          <h3>Проекты</h3>
+          <div class="mockup-list" id="mockupList"></div>
         </section>
+
         <section class="preview">
           <div class="frame-shell">
             <div class="frame-header">
               <strong id="frameLabel">Preview</strong>
               <div class="browser-dots"><span></span><span></span><span></span></div>
             </div>
-            <iframe id="previewFrame" name="previewFrame" title="Mockup preview" src="./mockups/dcni/index.html"></iframe>
+            <iframe id="previewFrame" name="previewFrame" title="Mockup preview" src="about:blank"></iframe>
           </div>
           <aside class="notes">
             <section>
               <h3>Ссылка для публикации</h3>
-              <div class="path" id="publishedPath">Сначала выберите макет</div>
+              <div class="path" id="publishedPath">Сначала выберите проект</div>
             </section>
             <section>
               <h4>Что можно согласовывать</h4>
@@ -207,6 +239,7 @@
         </section>
       </main>
     </div>
+
     <script>
       const publicBaseUrl = "https://xn--80akhjhbm1b7e.xn--p1ai";
       const mockups = [
@@ -216,12 +249,12 @@
           tag: "Client",
           path: "./mockups/delivery-exchange/index.html",
           publishPath: "/mockups/delivery-exchange/",
-          description: "Интерактивный экран настройки SLA и нагрузки биржи по продуктам и сменам.",
+          description: "Единый проект с вкладками: настройки биржи и работа с биржей в SFA Go.",
           requirements: [
-            "Сохранение значений из инпутов",
-            "Включение и выключение блоков чекбоксами",
-            "Кликабельные верхние кнопки и табы",
-            "Поведение формы после нажатия «Сохранить»"
+            "Два макета внутри одного окна через вкладки",
+            "Переход между настройками и операционным сценарием",
+            "Кликабельные элементы и сохранение состояния",
+            "Единая ссылка для показа проекта"
           ]
         },
         {
@@ -230,15 +263,16 @@
           tag: "Client",
           path: "./mockups/dcni/index.html",
           publishPath: "/mockups/dcni/",
-          description: "Мобильный сценарий выдачи продукта DCNI: список встреч, выбор карты, SMS-подтверждение и завершение выдачи.",
+          description: "Мобильный сценарий выдачи продукта DCNI: встречи, выбор карты, SMS, завершение.",
           requirements: [
             "Список активных, согласованных и завершенных встреч",
             "Переход в выдачу карты и выбор продукта из поиска",
             "SMS-подтверждение факта передачи продукта",
             "Фиксация фото welcome-pack и экран успешного завершения"
           ]
-        },
+        }
       ];
+
       const list = document.getElementById("mockupList");
       const title = document.getElementById("title");
       const description = document.getElementById("description");
@@ -246,17 +280,22 @@
       const frameLabel = document.getElementById("frameLabel");
       const pathBox = document.getElementById("publishedPath");
       const requirements = document.getElementById("requirements");
+      const openShowroomLink = document.getElementById("openShowroomLink");
       const openLink = document.getElementById("openLink");
       const copyBtn = document.getElementById("copyBtn");
-      let selected = mockups.find((mockup) => mockup.id === "delivery-exchange") || mockups[0];
+      const projectActions = Array.from(document.querySelectorAll(".project-action"));
+
+      openShowroomLink.href = `${publicBaseUrl}/`;
+
+      let selected = null;
+
       function renderList() {
         list.innerHTML = "";
         mockups.forEach((mockup) => {
-          const button = document.createElement("a");
+          const button = document.createElement("button");
+          button.type = "button";
           button.className = "mockup-card";
-          button.href = mockup.path;
-          button.target = "previewFrame";
-          button.setAttribute("aria-current", String(mockup.id === selected.id));
+          button.setAttribute("aria-current", String(selected && mockup.id === selected.id));
           button.innerHTML = `<small>${mockup.tag}</small><strong>${mockup.name}</strong><span>${mockup.description}</span>`;
           button.addEventListener("click", () => {
             selected = mockup;
@@ -265,21 +304,36 @@
           list.appendChild(button);
         });
       }
+
       function syncView() {
         renderList();
+        if (!selected) {
+          title.textContent = "Выберите проект";
+          description.textContent = "Проект откроется в окне preview ниже.";
+          frame.src = "about:blank";
+          frameLabel.textContent = "Preview";
+          openLink.href = `${publicBaseUrl}/`;
+          projectActions.forEach((el) => el.classList.add("is-hidden"));
+          pathBox.textContent = "Сначала выберите проект";
+          requirements.innerHTML = "";
+          copyBtn.textContent = "Скопировать путь";
+          return;
+        }
+
         title.textContent = selected.name;
         description.textContent = selected.description;
         frame.src = selected.path;
         frameLabel.textContent = selected.path;
+
         const publicUrl = `${publicBaseUrl}${selected.publishPath}`;
         openLink.href = publicUrl;
+        projectActions.forEach((el) => el.classList.remove("is-hidden"));
         pathBox.textContent = publicUrl;
         requirements.innerHTML = selected.requirements.map((item) => `<li>${item}</li>`).join("");
       }
+
       copyBtn.addEventListener("click", async () => {
-        if (!selected) {
-          return;
-        }
+        if (!selected) return;
         const text = `${publicBaseUrl}${selected.publishPath}`;
         try {
           await navigator.clipboard.writeText(text);
@@ -290,9 +344,8 @@
           setTimeout(() => { copyBtn.textContent = "Скопировать путь"; }, 1200);
         }
       });
+
       syncView();
     </script>
   </body>
 </html>
-
-
