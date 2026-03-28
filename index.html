@@ -172,7 +172,7 @@
             <p id="description">В этом окне будет live preview выбранного интерактивного экрана.</p>
           </div>
           <div class="actions">
-            <a class="btn btn-secondary" id="openLink" href="https://xn--80akhjhbm1b7e.xn--p1ai/mockups/courier-visits-mobile/" target="_blank" rel="noopener noreferrer">Открыть отдельно</a>
+            <a class="btn btn-secondary" id="openLink" href="https://xn--80akhjhbm1b7e.xn--p1ai/mockups/dcni/" target="_blank" rel="noopener noreferrer">Открыть отдельно</a>
             <button class="btn btn-primary" id="copyBtn" type="button">Скопировать путь</button>
           </div>
         </section>
@@ -182,7 +182,7 @@
               <strong id="frameLabel">Preview</strong>
               <div class="browser-dots"><span></span><span></span><span></span></div>
             </div>
-            <iframe id="previewFrame" name="previewFrame" title="Mockup preview" src="./mockups/courier-visits-mobile/index.html"></iframe>
+            <iframe id="previewFrame" name="previewFrame" title="Mockup preview" src="./mockups/dcni/index.html"></iframe>
           </div>
           <aside class="notes">
             <section>
@@ -224,17 +224,17 @@
           ]
         },
         {
-          id: "courier-visits-mobile",
+          id: "dcni",
           name: "Выдача продукта DCNI",
           tag: "Client",
-          path: "./mockups/courier-visits-mobile/index.html",
-          publishPath: "/mockups/courier-visits-mobile/",
-          description: "Мобильный список выездов: поиск, фильтры по статусам и действия на карточке клиента.",
+          path: "./mockups/dcni/index.html",
+          publishPath: "/mockups/dcni/",
+          description: "Мобильный сценарий выдачи продукта DCNI: список встреч, выбор карты, SMS-подтверждение и завершение выдачи.",
           requirements: [
-            "Сценарии по кнопкам Позвонить, SMS и Заметка",
-            "Правила переключения между вкладками",
-            "Что открывается по клику на карточку",
-            "Нужны ли доп. состояния и экраны"
+            "Список активных, согласованных и завершенных встреч",
+            "Переход в выдачу карты и выбор продукта из поиска",
+            "SMS-подтверждение факта передачи продукта",
+            "Фиксация фото welcome-pack и экран успешного завершения"
           ]
         },
       ];
@@ -247,7 +247,7 @@
       const requirements = document.getElementById("requirements");
       const openLink = document.getElementById("openLink");
       const copyBtn = document.getElementById("copyBtn");
-      let selected = mockups.find((mockup) => mockup.id === "courier-visits-mobile") || mockups[0];
+      let selected = mockups.find((mockup) => mockup.id === "dcni") || mockups[0];
       function renderList() {
         list.innerHTML = "";
         mockups.forEach((mockup) => {
