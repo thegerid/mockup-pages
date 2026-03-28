@@ -103,5 +103,7 @@ if(e.target.id==="sms"){st.sms=e.target.value.replace(/\D/g,"").slice(0,4);e.tar
 photo.addEventListener("change",()=>{const f=photo.files&&photo.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{st.photo=String(r.result||"");st.banner=true;render()};r.readAsDataURL(f)});
 render();
 </script>
+<script src="../_shared/feedback-widget.js"></script>
 </body>
 </html>
+
