@@ -93,11 +93,31 @@
   <script>
     const tabs = Array.from(document.querySelectorAll('[data-tab]'));
     const screens = Array.from(document.querySelectorAll('[data-screen]'));
-    function activate(id) {
-      tabs.forEach((t) => t.classList.toggle('a', t.dataset.tab === id));
-      screens.forEach((s) => s.classList.toggle('a', s.dataset.screen === id));
+    const defaultTab = "settings";
+    function notifyTabChange(id) {
+      const payload = { type: "mockup-tab-change", projectId: "delivery-exchange", tab: id };
+      try { window.parent.postMessage(payload, "*"); } catch {}
+      try { window.top.postMessage(payload, "*"); } catch {}
+    }
+    function setTabInUrl(id) {
+      try {
+        const url = new URL(location.href);
+        url.searchParams.set("tab", id);
+        history.replaceState(null, "", url.toString());
+      } catch {}
+    }
+    function activate(id, options = {}) {
+      const exists = tabs.some((t) => t.dataset.tab === id);
+      const nextId = exists ? id : defaultTab;
+      const shouldSyncUrl = options.syncUrl !== false;
+      tabs.forEach((t) => t.classList.toggle('a', t.dataset.tab === nextId));
+      screens.forEach((s) => s.classList.toggle('a', s.dataset.screen === nextId));
+      if (shouldSyncUrl) setTabInUrl(nextId);
+      notifyTabChange(nextId);
     }
     tabs.forEach((tab) => tab.addEventListener('click', () => activate(tab.dataset.tab)));
+    const initialTab = new URL(location.href).searchParams.get("tab") || defaultTab;
+    activate(initialTab, { syncUrl: true });
   </script>
 <script src="../_shared/feedback-widget.js"></script>
 </body>

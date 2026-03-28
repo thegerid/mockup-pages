@@ -50,7 +50,6 @@
         <label for="fwType">Тип</label>
         <select id="fwType">
           <option value="Замечание">Замечание</option>
-          <option value="Жалоба">Жалоба</option>
           <option value="Предложение">Предложение</option>
         </select>
       </div>

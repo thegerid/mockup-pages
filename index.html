@@ -249,6 +249,11 @@
           tag: "Client",
           path: "./mockups/delivery-exchange/index.html",
           publishPath: "/mockups/delivery-exchange/",
+          deepLink: {
+            type: "tab",
+            param: "tab",
+            defaultValue: "settings"
+          },
           description: "Единый проект с вкладками: настройки биржи и работа с биржей в SFA Go.",
           requirements: [
             "Два макета внутри одного окна через вкладки",
@@ -284,6 +289,7 @@
       const openLink = document.getElementById("openLink");
       const copyBtn = document.getElementById("copyBtn");
       const projectActions = Array.from(document.querySelectorAll(".project-action"));
+      const projectState = new Map();
 
       const isLocalShowroom = location.protocol === "file:" || /^(localhost|127\\.0\\.0\\.1)$/i.test(location.hostname);
       openShowroomLink.href = `${publicBaseUrl}/`;
@@ -296,6 +302,46 @@
       }
 
       let selected = null;
+
+      function getState(mockup) {
+        if (!mockup) return {};
+        if (!projectState.has(mockup.id)) projectState.set(mockup.id, {});
+        const state = projectState.get(mockup.id);
+        if (mockup.deepLink?.type === "tab" && !state.tab) state.tab = mockup.deepLink.defaultValue || "";
+        return state;
+      }
+
+      function buildPublicUrl(mockup) {
+        const url = new URL(mockup.publishPath, `${publicBaseUrl}/`);
+        if (mockup.deepLink?.type === "tab") {
+          const tab = getState(mockup).tab;
+          if (tab) url.searchParams.set(mockup.deepLink.param || "tab", tab);
+        }
+        return url.toString();
+      }
+
+      function buildPreviewUrl(mockup) {
+        if (mockup.deepLink?.type !== "tab") return mockup.path;
+        const tab = getState(mockup).tab;
+        if (!tab) return mockup.path;
+        const previewUrl = new URL(mockup.path, location.href);
+        previewUrl.searchParams.set(mockup.deepLink.param || "tab", tab);
+        return previewUrl.toString();
+      }
+
+      function buildPreviewLabel(mockup) {
+        if (mockup.deepLink?.type !== "tab") return mockup.path;
+        const tab = getState(mockup).tab;
+        if (!tab) return mockup.path;
+        return `${mockup.path}?${mockup.deepLink.param || "tab"}=${encodeURIComponent(tab)}`;
+      }
+
+      function syncProjectActions() {
+        if (!selected) return;
+        const publicUrl = buildPublicUrl(selected);
+        openLink.href = publicUrl;
+        pathBox.textContent = publicUrl;
+      }
 
       function renderList() {
         list.innerHTML = "";
@@ -330,19 +376,17 @@
 
         title.textContent = selected.name;
         description.textContent = selected.description;
-        frame.src = selected.path;
-        frameLabel.textContent = selected.path;
-
-        const publicUrl = `${publicBaseUrl}${selected.publishPath}`;
-        openLink.href = publicUrl;
+        const previewUrl = buildPreviewUrl(selected);
+        frame.src = previewUrl;
+        frameLabel.textContent = buildPreviewLabel(selected);
         projectActions.forEach((el) => el.classList.remove("is-hidden"));
-        pathBox.textContent = publicUrl;
+        syncProjectActions();
         requirements.innerHTML = selected.requirements.map((item) => `<li>${item}</li>`).join("");
       }
 
       copyBtn.addEventListener("click", async () => {
         if (!selected) return;
-        const text = `${publicBaseUrl}${selected.publishPath}`;
+        const text = buildPublicUrl(selected);
         try {
           await navigator.clipboard.writeText(text);
           copyBtn.textContent = "Путь скопирован";
@@ -360,6 +404,39 @@
         selected = null;
         syncView();
         window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+
+      frame.addEventListener("load", () => {
+        if (!selected || selected.deepLink?.type !== "tab") return;
+        try {
+          const sourceUrl = new URL(frame.contentWindow.location.href);
+          const paramName = selected.deepLink.param || "tab";
+          const tab = sourceUrl.searchParams.get(paramName);
+          if (!tab) return;
+          const state = getState(selected);
+          if (state.tab === tab) return;
+          state.tab = tab;
+          syncProjectActions();
+          frameLabel.textContent = buildPreviewLabel(selected);
+        } catch {}
+      });
+
+      window.addEventListener("message", (event) => {
+        if (!selected || selected.deepLink?.type !== "tab") return;
+        if (event.source !== frame.contentWindow) return;
+        // Contract for future multi-tab projects:
+        // iframe sends { type: "mockup-tab-change", projectId?: string, tab: string }
+        // and keeps selected tab in URL query parameter configured via mockup.deepLink.
+        const data = event.data;
+        if (!data || typeof data !== "object" || data.type !== "mockup-tab-change") return;
+        if (data.projectId && data.projectId !== selected.id) return;
+        const tab = String(data.tab || "").trim();
+        if (!tab) return;
+        const state = getState(selected);
+        if (state.tab === tab) return;
+        state.tab = tab;
+        syncProjectActions();
+        frameLabel.textContent = buildPreviewLabel(selected);
       });
 
       syncView();
