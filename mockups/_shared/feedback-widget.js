@@ -1,6 +1,7 @@
 ﻿(function () {
   if (window.__feedbackWidgetMounted) return;
   window.__feedbackWidgetMounted = true;
+  if (window.FEEDBACK_WIDGET_ENABLED !== true) return;
 
   const tgUsername = window.FEEDBACK_TG_USERNAME || "demidenca";
   const webhookUrl = window.FEEDBACK_WEBHOOK_URL || "";
