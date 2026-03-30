@@ -160,6 +160,85 @@
         word-break: break-all;
       }
 
+      .auth-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background:
+          radial-gradient(circle at top left, rgba(15, 118, 110, 0.16), transparent 26%),
+          rgba(243, 245, 248, 0.96);
+      }
+      .auth-card {
+        width: min(420px, 100%);
+        padding: 28px;
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        background: var(--panel);
+        box-shadow: var(--shadow);
+      }
+      .auth-card h2 {
+        margin: 0 0 10px;
+        font-size: 26px;
+      }
+      .auth-card p {
+        margin: 0 0 18px;
+        color: var(--muted);
+        line-height: 1.55;
+      }
+      .auth-row {
+        display: grid;
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+      .auth-row label {
+        font-weight: 700;
+        font-size: 14px;
+      }
+      .auth-row input {
+        width: 100%;
+        border: 1px solid #d0d9e5;
+        border-radius: 14px;
+        padding: 14px 16px;
+        background: #fff;
+        color: var(--text);
+        font: 16px/1.2 "Segoe UI", Arial, sans-serif;
+        outline: 0;
+      }
+      .auth-row input:focus {
+        border-color: rgba(15, 118, 110, 0.55);
+        box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.12);
+      }
+      .auth-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 18px;
+      }
+      .auth-hint {
+        margin-top: 12px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+      .auth-error {
+        min-height: 18px;
+        margin-top: 12px;
+        color: #b42318;
+        font-size: 13px;
+        line-height: 1.4;
+      }
+
+      .vitrina-locked .layout {
+        display: none;
+      }
+      .vitrina-locked .auth-overlay {
+        display: flex;
+      }
+
       @media (max-width: 1100px) { .preview { grid-template-columns: 1fr; } }
       @media (max-width: 900px) {
         .layout { grid-template-columns: 1fr; }
@@ -167,13 +246,65 @@
         .mockup-list { grid-template-columns: 1fr; }
       }
     </style>
+    <script>
+      (() => {
+        const PUBLIC_PASSWORD = "5555";
+        const ACCESS_TTL_MS = 3 * 60 * 60 * 1000;
+        const ACCESS_KEY = "vitrina-access";
+        const isLocalVitrina = location.protocol === "file:" || /^(localhost|127\.0\.0\.1)$/i.test(location.hostname);
+
+        function hasAccess() {
+          try {
+            const raw = localStorage.getItem(ACCESS_KEY);
+            if (!raw) return false;
+            const data = JSON.parse(raw);
+            if (!data || data.password !== PUBLIC_PASSWORD) return false;
+            if (data.host !== location.host) return false;
+            if (data.userAgent !== navigator.userAgent) return false;
+            if (!data.expiresAt || Date.now() > Number(data.expiresAt)) return false;
+            return true;
+          } catch {
+            return false;
+          }
+        }
+
+        window.__vitrinaAuth = {
+          key: ACCESS_KEY,
+          password: PUBLIC_PASSWORD,
+          ttlMs: ACCESS_TTL_MS,
+          isLocalVitrina,
+          hasAccess
+        };
+
+        if (!isLocalVitrina && !hasAccess()) {
+          document.documentElement.classList.add("vitrina-locked");
+        }
+      })();
+    </script>
   </head>
   <body>
+    <section class="auth-overlay" id="authOverlay" aria-hidden="true">
+      <div class="auth-card">
+        <h2>Вход в витрину</h2>
+        <p>Для доступа к главной странице витрины введите пароль. После успешного входа доступ сохранится в этом браузере на 3 часа.</p>
+        <form id="authForm">
+          <div class="auth-row">
+            <label for="authPassword">Пароль</label>
+            <input id="authPassword" name="password" type="password" inputmode="numeric" autocomplete="current-password" placeholder="Введите пароль" />
+          </div>
+          <div class="auth-actions">
+            <button class="btn btn-primary" type="submit">Войти</button>
+          </div>
+          <div class="auth-error" id="authError"></div>
+          <div class="auth-hint">Локально пароль не запрашивается. Для публичной ссылки вход действует только в этом браузере и на этом домене.</div>
+        </form>
+      </div>
+    </section>
     <div class="layout">
       <aside class="sidebar">
         <div class="brand">
           <h1>Макеты для проектов</h1>
-          <p>Локальный showroom для интерактивных макетов. Этот же набор страниц можно публиковать на GitHub Pages и отдавать заказчику одной ссылкой.</p>
+          <p>Локальная витрина для интерактивных макетов. Этот же набор страниц можно публиковать на GitHub Pages и отдавать заказчику одной ссылкой.</p>
         </div>
         <div class="meta">
           <div class="meta-card">
@@ -195,7 +326,7 @@
               <p id="description">Проект откроется в окне preview ниже.</p>
             </div>
             <div class="actions">
-              <a class="btn btn-secondary" id="openShowroomLink" href="https://xn--80akhjhbm1b7e.xn--p1ai/" target="_blank" rel="noopener noreferrer">Открыть шоурум</a>
+              <a class="btn btn-secondary" id="openShowroomLink" href="https://xn--80akhjhbm1b7e.xn--p1ai/" target="_blank" rel="noopener noreferrer">Открыть витрину</a>
               <a class="btn btn-secondary project-action is-hidden" id="openLink" href="https://xn--80akhjhbm1b7e.xn--p1ai/" target="_blank" rel="noopener noreferrer">Открыть отдельно</a>
               <button class="btn btn-primary project-action is-hidden" id="copyBtn" type="button">Скопировать путь</button>
             </div>
@@ -294,16 +425,21 @@
       const frameLabel = document.getElementById("frameLabel");
       const pathBox = document.getElementById("publishedPath");
       const requirements = document.getElementById("requirements");
+      const authOverlay = document.getElementById("authOverlay");
+      const authForm = document.getElementById("authForm");
+      const authPassword = document.getElementById("authPassword");
+      const authError = document.getElementById("authError");
       const openShowroomLink = document.getElementById("openShowroomLink");
       const openLink = document.getElementById("openLink");
       const copyBtn = document.getElementById("copyBtn");
       const projectActions = Array.from(document.querySelectorAll(".project-action"));
       const projectState = new Map();
 
-      const isLocalShowroom = location.protocol === "file:" || /^(localhost|127\\.0\\.0\\.1)$/i.test(location.hostname);
+      const authConfig = window.__vitrinaAuth || {};
+      const isLocalShowroom = Boolean(authConfig.isLocalVitrina);
       openShowroomLink.href = `${publicBaseUrl}/`;
       if (isLocalShowroom) {
-        openShowroomLink.textContent = "Открыть шоурум";
+        openShowroomLink.textContent = "Открыть витрину";
         openShowroomLink.target = "_blank";
       } else {
         openShowroomLink.textContent = "На главную";
@@ -448,6 +584,42 @@
         state.tab = tab;
         syncProjectActions();
         frameLabel.textContent = buildPreviewLabel(selected);
+      });
+
+      if (!isLocalShowroom && document.documentElement.classList.contains("vitrina-locked")) {
+        authOverlay.setAttribute("aria-hidden", "false");
+        setTimeout(() => authPassword.focus(), 0);
+      }
+
+      authForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+
+        if (isLocalShowroom) {
+          document.documentElement.classList.remove("vitrina-locked");
+          return;
+        }
+
+        const enteredPassword = authPassword.value.trim();
+        if (enteredPassword !== authConfig.password) {
+          authError.textContent = "Неверный пароль.";
+          authPassword.focus();
+          authPassword.select();
+          return;
+        }
+
+        try {
+          localStorage.setItem(authConfig.key, JSON.stringify({
+            password: enteredPassword,
+            host: location.host,
+            userAgent: navigator.userAgent,
+            expiresAt: Date.now() + authConfig.ttlMs
+          }));
+        } catch {}
+
+        authError.textContent = "";
+        document.documentElement.classList.remove("vitrina-locked");
+        authOverlay.setAttribute("aria-hidden", "true");
+        authPassword.value = "";
       });
 
       syncView();
