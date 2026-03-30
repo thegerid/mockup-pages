@@ -170,14 +170,15 @@
         padding: 24px;
         background:
           radial-gradient(circle at top left, rgba(15, 118, 110, 0.16), transparent 26%),
-          rgba(243, 245, 248, 0.96);
+          rgba(243, 245, 248, 0.52);
+        backdrop-filter: blur(8px);
       }
       .auth-card {
         width: min(420px, 100%);
         padding: 28px;
         border: 1px solid var(--line);
         border-radius: 24px;
-        background: var(--panel);
+        background: rgba(255, 255, 255, 0.94);
         box-shadow: var(--shadow);
       }
       .auth-card h2 {
@@ -224,6 +225,26 @@
         font-size: 13px;
         line-height: 1.5;
       }
+      .auth-contact {
+        margin-top: 18px;
+        padding-top: 16px;
+        border-top: 1px solid #e6ecf2;
+        display: grid;
+        gap: 6px;
+      }
+      .auth-contact strong {
+        font-size: 14px;
+      }
+      .auth-contact span {
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.55;
+      }
+      .auth-contact a {
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 700;
+      }
       .auth-error {
         min-height: 18px;
         margin-top: 12px;
@@ -233,7 +254,10 @@
       }
 
       .vitrina-locked .layout {
-        display: none;
+        filter: blur(8px);
+        transform: scale(1.01);
+        pointer-events: none;
+        user-select: none;
       }
       .vitrina-locked .auth-overlay {
         display: flex;
@@ -297,6 +321,12 @@
           </div>
           <div class="auth-error" id="authError"></div>
           <div class="auth-hint">Локально пароль не запрашивается. Для публичной ссылки вход действует только в этом браузере и на этом домене.</div>
+          <div class="auth-contact">
+            <strong>Запросить пароль</strong>
+            <span>Демиденко Герман Михайлович</span>
+            <span>Telegram: <a href="https://t.me/demidenca" target="_blank" rel="noopener noreferrer">@demidenca</a></span>
+            <span>Email: <a href="mailto:gdemidenko@alfabank.ru">gdemidenko@alfabank.ru</a></span>
+          </div>
         </form>
       </div>
     </section>
