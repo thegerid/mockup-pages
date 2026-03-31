@@ -3,42 +3,9 @@
   window.__feedbackWidgetMounted = true;
 
   const tgUsername = window.FEEDBACK_TG_USERNAME || "demidenca";
-  const contactEmail = window.FEEDBACK_CONTACT_EMAIL || "gdemidenko@alfabank.ru";
-  const isLocalEnv = location.protocol === "file:" || /^(localhost|127\.0\.0\.1)$/i.test(location.hostname);
 
-  const isTopWindow = (() => {
-    try {
-      return window.top === window.self;
-    } catch {
-      return true;
-    }
-  })();
-
-  if (isTopWindow && !isLocalEnv) {
-    const contactCss = `
-    .fw-contact{
-      position:fixed;left:14px;bottom:14px;z-index:2147482999;display:grid;gap:2px;
-      min-width:188px;padding:9px 11px;border-radius:12px;border:1px solid #d9e2ec;
-      background:rgba(255,255,255,.94);box-shadow:0 10px 22px rgba(16,24,40,.16);
-      font:12px/1.25 "Segoe UI",Arial,sans-serif;color:#2f3f56
-    }
-    .fw-contact strong{font:800 12px/1.2 "Segoe UI",Arial,sans-serif;color:#0f2b4a}
-    .fw-contact a{color:#0b5dbb;text-decoration:none}
-    .fw-contact a:hover{text-decoration:underline}
-    `;
-    const contactStyle = document.createElement("style");
-    contactStyle.textContent = contactCss;
-    document.head.appendChild(contactStyle);
-
-    const contact = document.createElement("aside");
-    contact.className = "fw-contact";
-    contact.innerHTML = `
-      <strong>Связаться со мной</strong>
-      <a href="https://t.me/${encodeURIComponent(tgUsername)}" target="_blank" rel="noopener noreferrer">Telegram: @${tgUsername}</a>
-      <a href="mailto:${contactEmail}">Email: ${contactEmail}</a>
-    `;
-    document.body.appendChild(contact);
-  }
+  // Контактный блок больше не рендерится на страницах макетов.
+  // Контакты остаются только на страницах шоурума (статический блок в index.html).
 
   if (window.FEEDBACK_WIDGET_ENABLED !== true) return;
 
