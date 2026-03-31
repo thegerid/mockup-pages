@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
-  <title>Витрина проверки фото WP в SFAD</title>
+  <title>Витрина просмотра результатов проверок Welcom-Pack</title>
   <style>
     :root {
       --bg: #dfe1e5;
@@ -51,11 +51,12 @@
 
     .topbar h1 {
       margin: 0;
-      font-size: clamp(34px, 3vw, 46px);
+      font-size: clamp(20px, 1.8vw, 34px);
       font-weight: 500;
       letter-spacing: 0.2px;
-      line-height: 1.06;
+      line-height: 1.15;
       color: #020407;
+      max-width: 72%;
     }
 
     .top-actions {
@@ -104,52 +105,501 @@
 
     .filters {
       padding: 10px;
+      position: relative;
+      z-index: 30;
+      overflow: visible;
     }
 
     .row-main {
       display: grid;
-      grid-template-columns: minmax(190px, 252px) minmax(190px, 252px) 116px;
+      grid-template-columns: minmax(210px, 252px) minmax(230px, 300px) minmax(150px, 170px) minmax(150px, 170px) minmax(120px, 120px);
       gap: 10px;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
       align-items: stretch;
+      overflow: visible;
+      position: relative;
+      z-index: 35;
     }
 
-    .field {
+    .search-field,
+    .date-field,
+    .city-field,
+    .region-field {
       position: relative;
       height: 50px;
       border-radius: var(--radius-md);
       border: 1px solid #d8dbe1;
       background: #e3e5e9;
+      display: flex;
+      align-items: center;
       overflow: hidden;
     }
 
-    .field select {
+    .search-field {
+      overflow: visible;
+      z-index: 20;
+    }
+
+    .search-field.open {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+      border-color: #8d95a3;
+      box-shadow: 0 2px 0 rgba(141, 149, 163, 0.2);
+      z-index: 25;
+    }
+
+    .search-field input,
+    .date-field input,
+    .dropdown-trigger {
       width: 100%;
       height: 100%;
       border: 0;
       outline: 0;
       background: transparent;
-      color: #727885;
-      font-size: 26px;
-      transform: scale(0.42);
-      transform-origin: left center;
-      padding: 0 84px 0 54px;
-      appearance: none;
+      color: #525a67;
+      font-size: 14px;
+      line-height: 1.2;
+      padding: 0 34px 0 12px;
+      font-family: inherit;
+      text-align: left;
+    }
+
+    .search-field input {
+      padding-left: 42px;
+    }
+
+    .search-field input::placeholder {
+      color: #7b8290;
+      opacity: 1;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid #404652;
+      pointer-events: none;
+    }
+
+    .search-icon::after {
+      content: "";
+      position: absolute;
+      right: -5px;
+      bottom: -3px;
+      width: 7px;
+      height: 2px;
+      border-radius: 99px;
+      background: #404652;
+      transform: rotate(45deg);
+    }
+
+    .search-criteria {
+      position: absolute;
+      top: 100%;
+      left: -1px;
+      right: auto;
+      z-index: 15;
+      display: flex;
+      gap: 6px;
+      flex-wrap: nowrap;
+      padding: 6px;
+      border: 1px solid #d5d9e1;
+      border-top: 0;
+      border-radius: 0 0 16px 16px;
+      background: #eff1f4;
+      box-shadow: 0 10px 24px rgba(33, 40, 53, 0.18);
+      min-width: calc(100% + 2px);
+      width: max-content;
+      max-width: none;
+      overflow: visible;
+      white-space: nowrap;
+    }
+
+    .search-criteria[hidden] {
+      display: none !important;
+    }
+
+    .criteria-chip {
+      border: 0;
+      border-radius: 16px;
+      padding: 8px 14px;
+      background: #dcdfe4;
+      color: #303744;
+      font: 600 13px/1 "Segoe UI", Arial, sans-serif;
+      cursor: pointer;
+      white-space: nowrap;
+      flex: 0 0 auto;
+    }
+
+    .criteria-chip.is-active {
+      background: #171b22;
+      color: #fff;
+    }
+
+    .date-field {
+      align-items: flex-start;
+      flex-direction: column;
+      justify-content: center;
+      padding: 6px 34px 6px 12px;
+      gap: 2px;
+      cursor: pointer;
+      overflow: visible;
+      z-index: 20;
+    }
+
+    .date-field.open {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+      border-color: #8d95a3;
+      box-shadow: 0 2px 0 rgba(141, 149, 163, 0.2);
+      z-index: 35;
+    }
+
+    .city-field,
+    .region-field {
+      overflow: visible;
+      z-index: 20;
+    }
+
+    .date-label {
+      font-size: 12px;
+      line-height: 1.1;
+      color: #666e7b;
+    }
+
+    .date-field input {
+      padding: 0;
+      height: auto;
+      font-size: 13px;
+      color: #3f4653;
       cursor: pointer;
     }
 
-    .field::after {
+    .date-icon {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      width: 16px;
+      height: 16px;
+      margin-top: -8px;
+      border: 2px solid #727987;
+      border-radius: 3px;
+      pointer-events: none;
+    }
+
+    .date-icon::before {
       content: "";
       position: absolute;
-      right: 16px;
-      top: 50%;
+      left: 2px;
+      right: 2px;
+      top: 4px;
+      border-top: 2px solid #727987;
+    }
+
+    .date-icon::after {
+      content: "";
+      position: absolute;
+      left: 3px;
+      top: 8px;
       width: 8px;
-      height: 8px;
-      margin-top: -6px;
+      height: 4px;
+      border-left: 2px solid #727987;
+      border-bottom: 2px solid #727987;
+      transform: rotate(-45deg);
+    }
+
+    .date-panel {
+      position: absolute;
+      top: 100%;
+      left: -1px;
+      right: -1px;
+      z-index: 14;
+      border: 1px solid #d5d9e1;
+      border-top: 0;
+      border-radius: 0 0 12px 12px;
+      background: #f2f4f7;
+      box-shadow: 0 10px 24px rgba(33, 40, 53, 0.18);
+      padding: 10px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .date-panel[hidden] {
+      display: none !important;
+    }
+
+    .date-tabs {
+      display: flex;
+      gap: 8px;
+    }
+
+    .date-tab {
+      border: 0;
+      border-radius: 12px;
+      background: #dde1e8;
+      color: #3a4351;
+      padding: 7px 10px;
+      font: 600 12px/1 "Segoe UI", Arial, sans-serif;
+      cursor: pointer;
+    }
+
+    .date-tab.is-active {
+      background: #171b22;
+      color: #fff;
+    }
+
+    .date-mode {
+      display: block;
+    }
+
+    .date-mode[hidden] {
+      display: none;
+    }
+
+    .calendar {
+      display: grid;
+      gap: 10px;
+    }
+
+    .calendar-head {
+      display: grid;
+      grid-template-columns: 30px 1fr 30px;
+      align-items: center;
+      gap: 10px;
+      padding: 2px 2px 0;
+    }
+
+    .calendar-month {
+      text-align: center;
+      font: 700 15px/1.2 "Segoe UI", Arial, sans-serif;
+      color: #242a34;
+    }
+
+    .calendar-nav {
+      border: 0;
+      border-radius: 9px;
+      background: transparent;
+      color: #2a313e;
+      font: 700 26px/1 "Segoe UI", Arial, sans-serif;
+      cursor: pointer;
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+    }
+
+    .calendar-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(30px, 1fr));
+      gap: 4px;
+      color: #7a818e;
+      font: 500 12px/1 "Segoe UI", Arial, sans-serif;
+      text-align: center;
+      padding: 0 2px;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(30px, 1fr));
+      gap: 4px;
+      padding: 0 2px;
+    }
+
+    .calendar-day {
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      color: #2f3642;
+      font: 500 22px/1 "Segoe UI", Arial, sans-serif;
+      transform: scale(0.42);
+      transform-origin: center;
+      width: 64px;
+      height: 64px;
+      margin: -12px auto;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      padding: 0;
+    }
+
+    .calendar-day.is-placeholder {
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .calendar-day.is-today {
+      color: #1f6acc;
+      font-weight: 700;
+    }
+
+    .calendar-day.is-selected-start,
+    .calendar-day.is-selected-end,
+    .calendar-day.is-selected-single {
+      background: #1f232b;
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .calendar-day.is-in-range {
+      background: #dce7fa;
+      color: #1f355f;
+      border-radius: 8px;
+      width: 54px;
+      height: 40px;
+      margin: 0 auto;
+      transform: none;
+      font-size: 12px;
+    }
+
+    .calendar-selection {
+      min-height: 20px;
+      color: #4f5868;
+      font: 600 12px/1.2 "Segoe UI", Arial, sans-serif;
+      padding: 0 4px;
+    }
+
+    .date-actions {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .date-apply {
+      border: 0;
+      border-radius: 8px;
+      background: #171b22;
+      color: #fff;
+      font: 600 12px/1 "Segoe UI", Arial, sans-serif;
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+
+    .dropdown {
+      position: relative;
+      display: flex;
+      align-items: center;
+      overflow: visible;
+      border-radius: inherit;
+    }
+
+    .dropdown-trigger {
+      appearance: none;
+      cursor: pointer;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    .dropdown::after {
+      content: "";
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      width: 7px;
+      height: 7px;
+      margin-top: -5px;
       border-right: 2px solid #7d8390;
       border-bottom: 2px solid #7d8390;
       transform: rotate(45deg);
       pointer-events: none;
+    }
+
+    .dropdown.open {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+      border-color: #8d95a3;
+      box-shadow: 0 2px 0 rgba(141, 149, 163, 0.2);
+      z-index: 35;
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      left: -1px;
+      right: -1px;
+      z-index: 70;
+      border: 1px solid #cfd5de;
+      border-top: 0;
+      border-radius: 0 0 10px 10px;
+      background: #f3f5f8;
+      box-shadow: 0 10px 24px rgba(33, 40, 53, 0.16);
+      padding: 4px;
+      max-height: 220px;
+      overflow: auto;
+    }
+
+    .dropdown-menu[hidden] {
+      display: none !important;
+    }
+
+    .dropdown-option {
+      width: 100%;
+      border: 0;
+      border-radius: 7px;
+      background: transparent;
+      color: #374050;
+      padding: 8px 8px;
+      font: 500 12px/1.2 "Segoe UI", Arial, sans-serif;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .dropdown-option.is-active {
+      background: #171b22;
+      color: #fff;
+    }
+
+    .dropdown-check-option {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 7px;
+      padding: 8px;
+      color: #374050;
+      font: 500 12px/1.2 "Segoe UI", Arial, sans-serif;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .dropdown-check-option:hover {
+      background: #e9edf4;
+    }
+
+    .dropdown-check-option input[type="checkbox"] {
+      width: 14px;
+      height: 14px;
+      margin: 0;
+      accent-color: #171b22;
+      cursor: pointer;
+    }
+
+    .dropdown-search-wrap {
+      padding: 4px;
+      margin-bottom: 4px;
+    }
+
+    .dropdown-search-input {
+      width: 100%;
+      height: 30px;
+      border: 1px solid #cfd5de;
+      border-radius: 7px;
+      background: #fff;
+      color: #2f3744;
+      font: 500 12px/1.2 "Segoe UI", Arial, sans-serif;
+      padding: 0 10px;
+      outline: none;
+    }
+
+    .dropdown-search-input::placeholder {
+      color: #848c99;
+      opacity: 1;
+    }
+
+    .dropdown-search-input:focus {
+      border-color: #8d95a3;
+      box-shadow: 0 0 0 2px rgba(141, 149, 163, 0.16);
     }
 
     .btn-find {
@@ -157,12 +607,10 @@
       border-radius: var(--radius-md);
       background: #e6e8ec;
       color: #9ea3ad;
-      font-size: 26px;
-      transform: scale(0.42);
-      transform-origin: left center;
-      width: 240px;
+      font-size: 14px;
       height: 50px;
-      margin-left: 0;
+      width: 100%;
+      margin: 0;
       cursor: pointer;
       font-weight: 600;
     }
@@ -175,9 +623,13 @@
 
     .row-chips {
       display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
+      flex-wrap: nowrap;
+      gap: 8px;
       align-items: center;
+      overflow: visible;
+      padding-bottom: 2px;
+      position: relative;
+      z-index: 34;
     }
 
     .chip {
@@ -187,45 +639,24 @@
       border: 1px solid #d8dbe1;
       background: var(--chip-bg);
       overflow: hidden;
-      min-width: 130px;
+      flex: 0 0 146px;
     }
 
-    .chip select {
-      width: 100%;
-      height: 100%;
-      border: 0;
-      outline: 0;
-      background: transparent;
-      color: var(--chip-text);
-      font-size: 24px;
-      transform: scale(0.42);
-      transform-origin: left center;
-      padding: 0 64px 0 42px;
-      appearance: none;
-      cursor: pointer;
+    .chip .dropdown-trigger {
+      padding-right: 24px;
+      font-size: 12px;
+      color: #3e4653;
     }
 
-    .chip::after {
-      content: "";
-      position: absolute;
-      right: 9px;
-      top: 50%;
+    .chip.dropdown {
+      overflow: visible;
+      z-index: 20;
+    }
+
+    .chip.dropdown::after {
+      right: 8px;
       width: 6px;
       height: 6px;
-      margin-top: -5px;
-      border-right: 2px solid #717786;
-      border-bottom: 2px solid #717786;
-      transform: rotate(45deg);
-      pointer-events: none;
-    }
-
-    .chip[aria-disabled="true"] {
-      background: #eceef2;
-    }
-
-    .chip[aria-disabled="true"] select {
-      color: var(--chip-muted);
-      cursor: not-allowed;
     }
 
     .result {
@@ -343,6 +774,22 @@
       cursor: pointer;
     }
 
+    .table-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-report {
+      border: 1px solid #c9d2df;
+      border-radius: 8px;
+      background: #eef2f8;
+      color: #4a5568;
+      padding: 7px 10px;
+      font-size: 12px;
+      cursor: default;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -359,6 +806,117 @@
       border-bottom: 1px solid #e9ecf2;
       font-size: 12px;
       color: #1f2430;
+    }
+
+    .photo-cell {
+      width: 64px;
+    }
+
+    .photo-thumb {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      object-fit: cover;
+      display: block;
+      border: 1px solid #d2d8e2;
+      box-shadow: 0 2px 5px rgba(25, 36, 55, 0.12);
+      background: #edf1f7;
+    }
+
+    .result-cell {
+      position: relative;
+    }
+
+    .cell-text {
+      user-select: text;
+    }
+
+    .details-row td {
+      background: #fafbfe;
+      border-bottom: 1px solid #dde4ef;
+      padding: 0;
+    }
+
+    .details-wrap {
+      padding: 12px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .details-status {
+      padding: 10px;
+      border: 1px solid #dbe2ee;
+      border-radius: 8px;
+      background: #f4f7fd;
+      color: #2c3544;
+    }
+
+    .details-status strong {
+      font-size: 12px;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .details-status p {
+      margin: 0;
+      font-size: 12px;
+      color: #4c576a;
+    }
+
+    .attempts-title {
+      margin: 0;
+      font-size: 12px;
+      color: #2a3342;
+      font-weight: 600;
+    }
+
+    .attempts-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 10px;
+    }
+
+    .attempt-card {
+      border: 1px solid #dbe2ee;
+      border-radius: 10px;
+      background: #fff;
+      padding: 10px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .attempt-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #2e3747;
+      font-weight: 600;
+    }
+
+    .attempt-status {
+      border-radius: 10px;
+      background: #eef2f8;
+      padding: 3px 8px;
+      font-size: 11px;
+      color: #3d4a5f;
+      white-space: nowrap;
+    }
+
+    .attempt-error {
+      font-size: 12px;
+      color: #4e596d;
+      min-height: 30px;
+    }
+
+    .attempt-photo {
+      width: 72px;
+      height: 72px;
+      border-radius: 10px;
+      border: 1px solid #d2d8e2;
+      object-fit: cover;
+      background: #edf1f7;
     }
 
     th {
@@ -380,24 +938,22 @@
       }
 
       .topbar h1 {
-        font-size: 34px;
+        max-width: 100%;
+        font-size: 22px;
       }
 
       .top-name,
       .top-icon,
       .dot { display: none; }
 
+      .btn-find {
+        width: 100%;
+      }
+
       .row-main {
         grid-template-columns: 1fr;
       }
 
-      .btn-find {
-        transform: none;
-        width: 100%;
-      }
-
-      .field select,
-      .chip select,
       .empty h2,
       .empty p {
         transform: none;
@@ -412,7 +968,7 @@
 <body>
   <div class="app">
     <header class="topbar">
-      <h1>Верификация</h1>
+      <h1>Витрина просмотра результатов проверок Welcom-Pack</h1>
       <div class="top-actions" aria-hidden="true">
         <span class="dot"></span>
         <span class="top-name">Михаил Михайлович Московский</span>
@@ -424,38 +980,151 @@
     <section class="panel filters">
       <form id="searchForm">
         <div class="row-main">
-          <label class="field">
-            <select id="region">
-              <option value="" selected>Регион</option>
-              <option value="Москва">Москва</option>
-              <option value="Московская область">Московская область</option>
-              <option value="Санкт-Петербург">Санкт-Петербург</option>
-              <option value="Новосибирская область">Новосибирская область</option>
-            </select>
-          </label>
+          <div class="search-field" id="searchField">
+            <span class="search-icon" aria-hidden="true"></span>
+            <input id="fioSearch" type="text" placeholder="Поиск по ФИО клиента" />
+            <div class="search-criteria" id="searchCriteria" hidden>
+              <button type="button" class="criteria-chip is-active" data-search-mode="fio_client">ФИО клиента</button>
+              <button type="button" class="criteria-chip" data-search-mode="phone_number">Номер телефона</button>
+              <button type="button" class="criteria-chip" data-search-mode="client_id">ID клиента</button>
+              <button type="button" class="criteria-chip" data-search-mode="mb_fio">ФИО МБ</button>
+              <button type="button" class="criteria-chip" data-search-mode="request_number">Номер заявки</button>
+            </div>
+          </div>
 
-          <label class="field">
-            <select id="city">
-              <option value="" selected>Города или ЛЦ</option>
-              <option value="Москва">Москва</option>
-              <option value="Мытищи">Мытищи</option>
-              <option value="Красногорск">Красногорск</option>
-              <option value="ЛЦ Север">ЛЦ Север</option>
-            </select>
-          </label>
+          <div class="date-field" id="dateField">
+            <span class="date-label">Дата или период доставки</span>
+            <input id="deliveryPeriod" type="text" value="30.03.2026 – 30.03.2026" readonly />
+            <span class="date-icon" aria-hidden="true"></span>
+            <div class="date-panel" id="datePanel" hidden>
+              <div class="date-tabs">
+                <button type="button" class="date-tab is-active" data-date-mode="range">Диапазон</button>
+                <button type="button" class="date-tab" data-date-mode="single">Конкретная дата</button>
+              </div>
+              <div class="date-mode" data-mode="range">
+                <div class="calendar" id="calendarRange">
+                  <div class="calendar-head">
+                    <button type="button" class="calendar-nav" id="calendarPrev" aria-label="Предыдущий месяц">‹</button>
+                    <div class="calendar-month" id="calendarMonthLabel">Март</div>
+                    <button type="button" class="calendar-nav" id="calendarNext" aria-label="Следующий месяц">›</button>
+                  </div>
+                  <div class="calendar-weekdays">
+                    <span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span>
+                  </div>
+                  <div class="calendar-grid" id="calendarGrid"></div>
+                  <div class="calendar-selection" id="calendarSelection"></div>
+                </div>
+              </div>
+              <div class="date-mode" data-mode="single" hidden>
+                <div class="calendar" id="calendarSingle">
+                  <div class="calendar-head">
+                    <button type="button" class="calendar-nav" id="calendarPrevSingle" aria-label="Предыдущий месяц">‹</button>
+                    <div class="calendar-month" id="calendarMonthLabelSingle">Март</div>
+                    <button type="button" class="calendar-nav" id="calendarNextSingle" aria-label="Следующий месяц">›</button>
+                  </div>
+                  <div class="calendar-weekdays">
+                    <span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span>
+                  </div>
+                  <div class="calendar-grid" id="calendarGridSingle"></div>
+                  <div class="calendar-selection" id="calendarSelectionSingle"></div>
+                </div>
+              </div>
+              <div class="date-actions">
+                <button type="button" class="date-apply" id="applyDateBtn">Применить</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="region-field dropdown" data-dropdown>
+            <button type="button" class="dropdown-trigger" data-dropdown-trigger data-default-label="Регион">Регион</button>
+            <input type="hidden" id="regionSelect" value="" />
+            <div class="dropdown-menu" data-dropdown-menu hidden>
+              <div class="dropdown-search-wrap">
+                <input id="regionSearchInput" data-dropdown-search class="dropdown-search-input" type="text" placeholder="Поиск по региону" />
+              </div>
+              <button type="button" class="dropdown-option is-active" data-value="">Все</button>
+              <button type="button" class="dropdown-option" data-value="Москва">Москва</button>
+              <button type="button" class="dropdown-option" data-value="Московская область">Московская область</button>
+            </div>
+          </div>
+
+          <div class="city-field dropdown" data-dropdown>
+            <button type="button" class="dropdown-trigger" data-dropdown-trigger data-default-label="Город или ЛЦ">Город или ЛЦ</button>
+            <input type="hidden" id="citySelect" value="" />
+            <div class="dropdown-menu" data-dropdown-menu hidden>
+              <div class="dropdown-search-wrap">
+                <input id="citySearchInput" data-dropdown-search class="dropdown-search-input" type="text" placeholder="Поиск по городу или ЛЦ" />
+              </div>
+              <button type="button" class="dropdown-option is-active" data-value="">Все</button>
+              <button type="button" class="dropdown-option" data-value="Москва">Москва</button>
+              <button type="button" class="dropdown-option" data-value="Мытищи">Мытищи</button>
+              <button type="button" class="dropdown-option" data-value="Красногорск">Красногорск</button>
+              <button type="button" class="dropdown-option" data-value="ЛЦ Север">ЛЦ Север</button>
+            </div>
+          </div>
 
           <button id="findBtn" class="btn-find" type="submit" disabled>Найти</button>
         </div>
 
         <div class="row-chips">
-          <label class="chip"><select id="request"><option value="">Номер заявки</option><option>127532</option><option>127650</option><option>128001</option></select></label>
-          <label class="chip"><select id="days"><option value="">Дни на верификации</option><option>1 день</option><option>2-3 дня</option><option>4+ дней</option></select></label>
-          <label class="chip"><select id="product"><option value="">Тип продукта</option><option>Карта</option><option>Кредит</option><option>Пакет услуг</option></select></label>
-          <label class="chip"><select id="operation"><option value="">Тип операции</option><option>Проверка фото</option><option>Повторная проверка</option></select></label>
-
-          <label class="chip" id="reasonChip" aria-disabled="true"><select id="reason" disabled><option value="">Причина операции</option><option>Низкое качество фото</option><option>Повторный запрос от СБ</option></select></label>
-          <label class="chip" id="subReasonChip" aria-disabled="true"><select id="subReason" disabled><option value="">Подпричина</option><option>Размытость</option><option>Плохой свет</option></select></label>
-          <label class="chip"><select id="delivery"><option value="">Срок доставки</option><option>Сегодня</option><option>Завтра</option><option>2+ дней</option></select></label>
+          <div class="chip dropdown" data-dropdown>
+            <button type="button" class="dropdown-trigger" data-dropdown-trigger data-default-label="Тип продукта">Тип продукта: Все</button>
+            <input type="hidden" id="productType" value="" />
+            <div class="dropdown-menu" data-dropdown-menu data-multiselect="true" hidden>
+              <label class="dropdown-check-option">
+                <input type="checkbox" data-option-value="DC" />
+                <span>DC</span>
+              </label>
+              <label class="dropdown-check-option">
+                <input type="checkbox" data-option-value="CC" />
+                <span>CC</span>
+              </label>
+              <label class="dropdown-check-option">
+                <input type="checkbox" data-option-value="CC2" />
+                <span>CC2</span>
+              </label>
+            </div>
+          </div>
+          <div class="chip dropdown" data-dropdown>
+            <button type="button" class="dropdown-trigger" data-dropdown-trigger data-default-label="Статус проверки">Статус проверки: Все</button>
+            <input type="hidden" id="verificationStatus" value="" />
+            <div class="dropdown-menu" data-dropdown-menu data-multiselect="true" hidden>
+              <label class="dropdown-check-option">
+                <input type="checkbox" data-option-value="Успешно" />
+                <span>Успешно</span>
+              </label>
+              <label class="dropdown-check-option">
+                <input type="checkbox" data-option-value="Ошибка распознавания" />
+                <span>Ошибка распознавания</span>
+              </label>
+              <label class="dropdown-check-option">
+                <input type="checkbox" data-option-value="Техническая ошибка" />
+                <span>Техническая ошибка</span>
+              </label>
+            </div>
+          </div>
+          <div class="chip dropdown" data-dropdown>
+            <button type="button" class="dropdown-trigger" data-dropdown-trigger data-default-label="Начальник группы">Начальник группы: Все</button>
+            <input type="hidden" id="groupLeadFilter" value="" />
+            <div class="dropdown-menu" data-dropdown-menu data-multiselect="true" hidden>
+              <label class="dropdown-check-option">
+                <input type="checkbox" data-option-value="Егоров Антон Сергеевич" />
+                <span>Егоров Антон Сергеевич</span>
+              </label>
+              <label class="dropdown-check-option">
+                <input type="checkbox" data-option-value="Полякова Ирина Михайловна" />
+                <span>Полякова Ирина Михайловна</span>
+              </label>
+              <label class="dropdown-check-option">
+                <input type="checkbox" data-option-value="Кузин Дмитрий Олегович" />
+                <span>Кузин Дмитрий Олегович</span>
+              </label>
+              <label class="dropdown-check-option">
+                <input type="checkbox" data-option-value="Лебедева Мария Викторовна" />
+                <span>Лебедева Мария Викторовна</span>
+              </label>
+            </div>
+          </div>
         </div>
       </form>
     </section>
@@ -464,7 +1133,7 @@
       <div class="empty" id="emptyState">
         <div class="empty-icon" aria-hidden="true"></div>
         <h2>Пока пусто</h2>
-        <p>Выберите регион или город, остальные фильтры и нажмите «Найти»</p>
+        <p>Введите ФИО или выберите города/ЛЦ, добавьте фильтры и нажмите «Найти»</p>
       </div>
 
       <div class="loading" id="loadingState">
@@ -474,28 +1143,29 @@
 
       <div class="table-wrap" id="tableState">
         <div class="table-head">
-          <strong id="tableTitle">Найдено 1 заявка</strong>
-          <button type="button" class="btn-reset" id="backToEmpty">Показать пустое состояние</button>
+          <strong id="tableTitle">Найдено 10 заявок</strong>
+          <div class="table-actions">
+            <button type="button" class="btn-report" aria-disabled="true">Выгрузить отчет</button>
+            <button type="button" class="btn-reset" id="backToEmpty">Сбросить фильтры</button>
+          </div>
         </div>
         <table>
           <thead>
             <tr>
               <th>Номер заявки</th>
+              <th>ФИО Клиента</th>
               <th>Город / ЛЦ</th>
               <th>Тип операции</th>
-              <th>Дни на верификации</th>
-              <th>Срок доставки</th>
+              <th>Тип продукта</th>
+              <th>Дата доставки</th>
+              <th>Статус проверки</th>
+              <th>Количество попыток</th>
+              <th>Начальник группы</th>
+              <th>ФИО МБ</th>
+              <th>Фото</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td>127650</td>
-              <td id="tableCity">Москва</td>
-              <td>Проверка фото</td>
-              <td>2</td>
-              <td>Сегодня</td>
-            </tr>
-          </tbody>
+          <tbody id="tableBody"></tbody>
         </table>
       </div>
     </section>
@@ -503,40 +1173,523 @@
 
   <script>
     const form = document.getElementById("searchForm");
-    const region = document.getElementById("region");
-    const city = document.getElementById("city");
-    const operation = document.getElementById("operation");
-    const reason = document.getElementById("reason");
-    const subReason = document.getElementById("subReason");
-    const reasonChip = document.getElementById("reasonChip");
-    const subReasonChip = document.getElementById("subReasonChip");
+    const searchField = document.getElementById("searchField");
+    const searchCriteria = document.getElementById("searchCriteria");
+    const criteriaButtons = Array.from(searchCriteria.querySelectorAll("[data-search-mode]"));
+    const dateField = document.getElementById("dateField");
+    const datePanel = document.getElementById("datePanel");
+    const dateTabs = Array.from(datePanel.querySelectorAll("[data-date-mode]"));
+    const rangeMode = datePanel.querySelector('[data-mode="range"]');
+    const singleMode = datePanel.querySelector('[data-mode="single"]');
+    const calendarGrid = document.getElementById("calendarGrid");
+    const calendarGridSingle = document.getElementById("calendarGridSingle");
+    const calendarMonthLabel = document.getElementById("calendarMonthLabel");
+    const calendarMonthLabelSingle = document.getElementById("calendarMonthLabelSingle");
+    const calendarSelection = document.getElementById("calendarSelection");
+    const calendarSelectionSingle = document.getElementById("calendarSelectionSingle");
+    const calendarPrev = document.getElementById("calendarPrev");
+    const calendarNext = document.getElementById("calendarNext");
+    const calendarPrevSingle = document.getElementById("calendarPrevSingle");
+    const calendarNextSingle = document.getElementById("calendarNextSingle");
+    const applyDateBtn = document.getElementById("applyDateBtn");
+    const dropdowns = Array.from(document.querySelectorAll("[data-dropdown]"));
+    const fioSearch = document.getElementById("fioSearch");
+    const regionSelect = document.getElementById("regionSelect");
+    const citySelect = document.getElementById("citySelect");
+    const searchableDropdownInputs = Array.from(document.querySelectorAll("[data-dropdown-search]"));
+    const productType = document.getElementById("productType");
+    const verificationStatus = document.getElementById("verificationStatus");
+    const groupLeadFilter = document.getElementById("groupLeadFilter");
+    const deliveryPeriod = document.getElementById("deliveryPeriod");
     const findBtn = document.getElementById("findBtn");
     const emptyState = document.getElementById("emptyState");
     const loadingState = document.getElementById("loadingState");
     const tableState = document.getElementById("tableState");
     const tableTitle = document.getElementById("tableTitle");
-    const tableCity = document.getElementById("tableCity");
+    const tableBody = document.getElementById("tableBody");
     const backToEmpty = document.getElementById("backToEmpty");
 
     let loadingTimer = null;
+    let requireFindAfterReset = false;
+    const searchModeLabels = {
+      fio_client: "ФИО клиента",
+      phone_number: "номер телефона",
+      client_id: "ID клиента",
+      mb_fio: "ФИО МБ",
+      request_number: "номер заявки"
+    };
 
-    function updateFindButtonState() {
-      const enabled = Boolean(region.value || city.value);
-      findBtn.disabled = !enabled;
-      findBtn.classList.toggle("enabled", enabled);
+    let activeSearchMode = "fio_client";
+    let activeDateMode = "range";
+    const monthNames = [
+      "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
+      "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"
+    ];
+    const todayIso = new Date().toISOString().slice(0, 10);
+    let calendarViewYear = 2026;
+    let calendarViewMonth = 2;
+    let selectedSingle = "2026-03-30";
+    let selectedRangeStart = "2026-03-30";
+    let selectedRangeEnd = "2026-03-30";
+    const photoPalette = [
+      ["#d6e7ff", "#93b8f5"],
+      ["#f5e0cf", "#dfb08f"],
+      ["#d7f0e6", "#8bc7b1"],
+      ["#f4dcf6", "#cd9ed4"],
+      ["#f8e5cc", "#e0bc86"]
+    ];
+
+    function getInitials(name) {
+      const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
+      if (!parts.length) return "КЛ";
+      const first = parts[0][0] || "";
+      const second = parts[1]?.[0] || parts[0][1] || "";
+      return `${first}${second}`.toUpperCase();
     }
 
-    function updateReasonState() {
-      const enabled = Boolean(operation.value);
-      reason.disabled = !enabled;
-      subReason.disabled = !enabled;
-      reasonChip.setAttribute("aria-disabled", String(!enabled));
-      subReasonChip.setAttribute("aria-disabled", String(!enabled));
+    function buildClientPhotoData(name, paletteIndex) {
+      const initials = getInitials(name);
+      const [c1, c2] = photoPalette[paletteIndex % photoPalette.length];
+      const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="88" height="88" viewBox="0 0 88 88">
+          <defs>
+            <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="${c1}"/>
+              <stop offset="100%" stop-color="${c2}"/>
+            </linearGradient>
+          </defs>
+          <rect width="88" height="88" rx="16" fill="url(#g)"/>
+          <circle cx="44" cy="33" r="15" fill="rgba(255,255,255,0.88)"/>
+          <rect x="20" y="52" width="48" height="24" rx="12" fill="rgba(255,255,255,0.8)"/>
+          <text x="44" y="50" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="700" fill="#243246">${initials}</text>
+        </svg>
+      `;
+      return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+    }
 
-      if (!enabled) {
-        reason.value = "";
-        subReason.value = "";
+    const recognitionErrorPool = [
+      "На фото нет лица",
+      "На фото присутствует ДУЛ",
+      "Фото с бумажного носителя или документа",
+      "Низкое качество фото",
+      "Не совпадает с фото ДУЛ клиента",
+      "Не совпадает с прежними фото клиента"
+    ];
+    const techErrorPool = [
+      "таймаут при запросе в сервис",
+      "недоступен сервис верификации",
+      "ошибка сети при передаче фото"
+    ];
+    const groupLeadPool = [
+      "Егоров Антон Сергеевич",
+      "Полякова Ирина Михайловна",
+      "Кузин Дмитрий Олегович",
+      "Лебедева Мария Викторовна"
+    ];
+
+    function extractStatusReason(statusDetail) {
+      const text = String(statusDetail || "").trim();
+      const parts = text.split(":");
+      const reason = parts.length > 1 ? parts.slice(1).join(":").trim() : text;
+      return reason.replace(/\.$/, "");
+    }
+
+    function buildAttemptPhotoData(name, rowIndex, attemptIndex) {
+      const initials = getInitials(name);
+      const [c1, c2] = photoPalette[(rowIndex + attemptIndex + 1) % photoPalette.length];
+      const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">
+          <defs>
+            <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="${c1}"/>
+              <stop offset="100%" stop-color="${c2}"/>
+            </linearGradient>
+          </defs>
+          <rect width="96" height="96" rx="16" fill="url(#g)"/>
+          <circle cx="48" cy="35" r="16" fill="rgba(255,255,255,0.9)"/>
+          <rect x="20" y="56" width="56" height="26" rx="13" fill="rgba(255,255,255,0.84)"/>
+          <text x="48" y="52" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="700" fill="#243246">${initials}</text>
+        </svg>
+      `;
+      return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+    }
+
+    function buildAttemptsForRow(row, rowIndex) {
+      const finalReason = row.status === "Успешно" ? "Без ошибок" : extractStatusReason(row.statusDetail);
+      let attemptsCount = 1;
+      if (row.status === "Успешно") {
+        attemptsCount = rowIndex % 2 === 0 ? 2 : 1;
+      } else if (row.status === "Ошибка распознавания") {
+        attemptsCount = 2 + (rowIndex % 2);
+      } else {
+        attemptsCount = 2;
       }
+
+      const attempts = [];
+      for (let i = 0; i < attemptsCount; i += 1) {
+        const isFinal = i === attemptsCount - 1;
+        let status = row.status;
+        let error = finalReason;
+
+        if (!isFinal) {
+          if (row.status === "Техническая ошибка") {
+            status = "Техническая ошибка";
+            error = techErrorPool[(rowIndex + i) % techErrorPool.length];
+          } else {
+            status = "Ошибка распознавания";
+            error = recognitionErrorPool[(rowIndex + i) % recognitionErrorPool.length];
+          }
+        }
+
+        attempts.push({
+          attemptNo: i + 1,
+          status,
+          error: status === "Успешно" ? "Без ошибок" : error,
+          photoData: buildAttemptPhotoData(row.clientName, rowIndex, i)
+        });
+      }
+
+      return attempts;
+    }
+
+    const baseRows = [
+      { requestNo: "127650", city: "Москва Алтуфьево", operation: "Проверка фото", product: "DC", deliveryDate: "2026-03-30", status: "Успешно", statusDetail: "Успешно", clientName: "Медведев Анфим Ерграфович", phone: "79001234567", clientId: "BQRNTX", svkFio: "Колпарев Константин", mbFio: "Петрова Анна Сергеевна" },
+      { requestNo: "127651", city: "Москва Щелковская", operation: "Проверка фото", product: "CC", deliveryDate: "2026-03-30", status: "Ошибка распознавания", statusDetail: "Ошибка распознавания: На фото нет лица.", clientName: "Иванов Петр Сергеевич", phone: "79007654321", clientId: "AXQ921", svkFio: "Давыдов Артем", mbFio: "Романов Илья Валерьевич" },
+      { requestNo: "127652", city: "Москва Тимирязевская", operation: "Повторная проверка", product: "CC2", deliveryDate: "2026-03-31", status: "Ошибка распознавания", statusDetail: "Ошибка распознавания: На фото присутствует ДУЛ.", clientName: "Смирнова Лидия Павловна", phone: "79005551234", clientId: "LID552", svkFio: "Миронов Павел", mbFio: "Горбунова Елена Андреевна" },
+      { requestNo: "127653", city: "Москва Войковская", operation: "Проверка фото", product: "DC", deliveryDate: "2026-03-31", status: "Ошибка распознавания", statusDetail: "Ошибка распознавания: Фото с бумажного носителя или документа.", clientName: "Кузнецов Егор Андреевич", phone: "79009998877", clientId: "EGA440", svkFio: "Калинин Олег", mbFio: "Титов Максим Дмитриевич" },
+      { requestNo: "127654", city: "Мытищи", operation: "Проверка фото", product: "CC", deliveryDate: "2026-04-01", status: "Ошибка распознавания", statusDetail: "Ошибка распознавания: Низкое качество фото.", clientName: "Волкова Марина Игоревна", phone: "79001112233", clientId: "MAR778", svkFio: "Федоров Иван", mbFio: "Кузьмина Дарья Олеговна" },
+      { requestNo: "127655", city: "Красногорск", operation: "Проверка фото", product: "CC2", deliveryDate: "2026-04-01", status: "Ошибка распознавания", statusDetail: "Ошибка распознавания: Не совпадает с фото ДУЛ клиента.", clientName: "Павлов Никита Денисович", phone: "79007771122", clientId: "NIK120", svkFio: "Козлов Роман", mbFio: "Семенов Кирилл Павлович" },
+      { requestNo: "127656", city: "ЛЦ Север", operation: "Повторная проверка", product: "DC", deliveryDate: "2026-04-02", status: "Ошибка распознавания", statusDetail: "Ошибка распознавания: Не совпадает с прежними фото клиента.", clientName: "Соколова Вера Олеговна", phone: "79008884455", clientId: "VER089", svkFio: "Новиков Илья", mbFio: "Орлова Мария Николаевна" },
+      { requestNo: "127657", city: "Москва Алтуфьево", operation: "Проверка фото", product: "CC", deliveryDate: "2026-04-02", status: "Техническая ошибка", statusDetail: "Техническая ошибка: таймаут при запросе в сервис.", clientName: "Белов Сергей Романович", phone: "79004445566", clientId: "SER604", svkFio: "Соколов Даниил", mbFio: "Баранова Юлия Игоревна" },
+      { requestNo: "127658", city: "Мытищи", operation: "Проверка фото", product: "CC2", deliveryDate: "2026-04-03", status: "Успешно", statusDetail: "Успешно", clientName: "Тарасова Ольга Юрьевна", phone: "79002223344", clientId: "OLG887", svkFio: "Ершов Матвей", mbFio: "Васильев Степан Артемович" },
+      { requestNo: "127659", city: "ЛЦ Север", operation: "Повторная проверка", product: "DC", deliveryDate: "2026-04-03", status: "Техническая ошибка", statusDetail: "Техническая ошибка: недоступен сервис верификации.", clientName: "Николаев Артур Викторович", phone: "79006667788", clientId: "ART778", svkFio: "Крылов Алексей", mbFio: "Мельникова Ирина Павловна" }
+    ].map((row, index) => ({
+      ...row,
+      region: (row.city.includes("Мытищи") || row.city.includes("Красногорск")) ? "Московская область" : "Москва",
+      groupLead: groupLeadPool[index % groupLeadPool.length],
+      photoData: buildClientPhotoData(row.clientName, index),
+      attempts: buildAttemptsForRow(row, index)
+    }));
+
+    function formatDate(isoDate) {
+      if (!isoDate) return "";
+      const [year, month, day] = isoDate.split("-");
+      if (!year || !month || !day) return "";
+      return `${day}.${month}.${year}`;
+    }
+
+    function formatDateShort(isoDate) {
+      if (!isoDate) return "";
+      const [year, month, day] = isoDate.split("-");
+      if (!year || !month || !day) return "";
+      return `${day}.${month}.${year.slice(-2)}`;
+    }
+
+    function renderResultsRows(rows) {
+      const rowsToRender = rows.slice(0, 10);
+      if (rowsToRender.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="11">Нет заявок по выбранным фильтрам</td></tr>`;
+        tableTitle.textContent = "Найдено 0 заявок";
+        return;
+      }
+
+      tableBody.innerHTML = rowsToRender.map((row) => {
+        const attemptsHtml = (row.attempts || []).map((attempt) => `
+          <article class="attempt-card">
+            <div class="attempt-head">
+              <span>Попытка ${attempt.attemptNo}</span>
+              <span class="attempt-status">${attempt.status}</span>
+            </div>
+            <div class="attempt-error">${attempt.status === "Успешно" ? "Ошибок нет" : `Ошибка: ${attempt.error}`}</div>
+            <img class="attempt-photo" src="${attempt.photoData}" alt="Фото из попытки ${attempt.attemptNo} по заявке ${row.requestNo}" loading="lazy" />
+          </article>
+        `).join("");
+
+        return `
+          <tr class="result-row" data-request-row="${row.requestNo}">
+            <td class="result-cell"><span class="cell-text">${row.requestNo}</span></td>
+            <td class="result-cell"><span class="cell-text">${row.clientName}</span></td>
+            <td class="result-cell"><span class="cell-text">${row.city}</span></td>
+            <td class="result-cell"><span class="cell-text">${row.operation}</span></td>
+            <td class="result-cell"><span class="cell-text">${row.product}</span></td>
+            <td class="result-cell"><span class="cell-text">${formatDateShort(row.deliveryDate)}</span></td>
+            <td class="result-cell"><span class="cell-text">${row.status}</span></td>
+            <td class="result-cell"><span class="cell-text">${(row.attempts || []).length}</span></td>
+            <td class="result-cell"><span class="cell-text">${row.groupLead}</span></td>
+            <td class="result-cell"><span class="cell-text">${row.mbFio}</span></td>
+            <td class="photo-cell">
+              <img class="photo-thumb" src="${row.photoData}" alt="Фото клиента по заявке ${row.requestNo}" loading="lazy" />
+            </td>
+          </tr>
+          <tr class="details-row" data-details-row="${row.requestNo}" hidden>
+            <td colspan="11">
+              <div class="details-wrap">
+                <div class="details-status">
+                  <strong>Статус проверки: ${row.status}</strong>
+                  <p>Пояснение: ${row.statusDetail}</p>
+                </div>
+                <p class="attempts-title">Попытки проверки</p>
+                <div class="attempts-list">${attemptsHtml}</div>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join("");
+
+      tableTitle.textContent = `Найдено ${rowsToRender.length} заявок`;
+    }
+
+    function includesCI(source, query) {
+      return String(source || "").toLowerCase().includes(String(query || "").toLowerCase());
+    }
+
+    function splitMultiValue(value) {
+      return String(value || "").split("||").map((item) => item.trim()).filter(Boolean);
+    }
+
+    function serializeMultiValue(values) {
+      return values.join("||");
+    }
+
+    function getFilteredRows() {
+      const query = fioSearch.value.trim();
+      const selectedProducts = splitMultiValue(productType.value);
+      const selectedStatuses = splitMultiValue(verificationStatus.value);
+      const selectedGroupLeads = splitMultiValue(groupLeadFilter.value);
+      return baseRows.filter((row) => {
+        if (regionSelect.value && row.region !== regionSelect.value) return false;
+        if (citySelect.value && !row.city.includes(citySelect.value)) return false;
+        if (selectedProducts.length && !selectedProducts.includes(row.product)) return false;
+        if (selectedStatuses.length && !selectedStatuses.includes(row.status)) return false;
+        if (selectedGroupLeads.length && !selectedGroupLeads.includes(row.groupLead)) return false;
+
+        if (!query) return true;
+        if (activeSearchMode === "request_number") return includesCI(row.requestNo, query);
+        if (activeSearchMode === "phone_number") return includesCI(row.phone, query.replace(/\D/g, ""));
+        if (activeSearchMode === "client_id") return includesCI(row.clientId, query);
+        if (activeSearchMode === "mb_fio") return includesCI(row.mbFio, query);
+        return includesCI(row.clientName, query);
+      });
+    }
+
+    function applyFilters(options = {}) {
+      if (requireFindAfterReset && !options.force) return;
+      renderResultsRows(getFilteredRows());
+      showState("table");
+    }
+
+    function resetFilters() {
+      fioSearch.value = "";
+      regionSelect.value = "";
+      citySelect.value = "";
+      productType.value = "";
+      verificationStatus.value = "";
+      groupLeadFilter.value = "";
+
+      dropdowns.forEach((dropdown) => {
+        const trigger = dropdown.querySelector("[data-dropdown-trigger]");
+        const menu = dropdown.querySelector("[data-dropdown-menu]");
+        const hiddenInput = dropdown.querySelector('input[type="hidden"]');
+        const isMulti = menu?.dataset.multiselect === "true";
+        if (isMulti) {
+          const checkboxes = Array.from(dropdown.querySelectorAll('input[type="checkbox"][data-option-value]'));
+          checkboxes.forEach((checkbox) => { checkbox.checked = false; });
+          hiddenInput.value = "";
+          updateMultiTriggerText(trigger, []);
+          return;
+        }
+
+        const options = Array.from(dropdown.querySelectorAll(".dropdown-option"));
+        if (!trigger || !hiddenInput || options.length === 0) return;
+        options.forEach((option) => option.classList.remove("is-active"));
+        options[0].classList.add("is-active");
+        hiddenInput.value = options[0].dataset.value || "";
+        trigger.textContent = getTriggerText(trigger, options[0]);
+      });
+
+      searchableDropdownInputs.forEach((searchInput) => {
+        searchInput.value = "";
+        const parentDropdown = searchInput.closest("[data-dropdown]");
+        if (!parentDropdown) return;
+        const options = Array.from(parentDropdown.querySelectorAll(".dropdown-option"));
+        options.forEach((option) => { option.hidden = false; });
+      });
+    }
+
+    function compareIsoDates(a, b) {
+      return String(a).localeCompare(String(b));
+    }
+
+    function shiftCalendarMonth(delta) {
+      const next = new Date(calendarViewYear, calendarViewMonth + delta, 1);
+      calendarViewYear = next.getFullYear();
+      calendarViewMonth = next.getMonth();
+      renderCalendars();
+    }
+
+    function closeAllDropdowns(except) {
+      dropdowns.forEach((dropdown) => {
+        if (except && dropdown === except) return;
+        dropdown.classList.remove("open");
+        const menu = dropdown.querySelector("[data-dropdown-menu]");
+        if (menu) menu.hidden = true;
+      });
+    }
+
+    function openSearchCriteria() {
+      closeAllDropdowns();
+      closeDatePanel();
+      searchCriteria.hidden = false;
+      searchField.classList.add("open");
+    }
+
+    function closeSearchCriteria() {
+      searchCriteria.hidden = true;
+      searchField.classList.remove("open");
+    }
+
+    function setDateMode(mode) {
+      activeDateMode = mode === "single" ? "single" : "range";
+      const isSingle = activeDateMode === "single";
+      singleMode.hidden = !isSingle;
+      rangeMode.hidden = isSingle;
+      dateTabs.forEach((tab) => {
+        tab.classList.toggle("is-active", tab.dataset.dateMode === activeDateMode);
+      });
+      renderCalendars();
+    }
+
+    function renderCalendarGrid(gridElement, monthLabelElement, selectionElement, mode) {
+      gridElement.innerHTML = "";
+      monthLabelElement.textContent = monthNames[calendarViewMonth];
+
+      const firstDay = new Date(calendarViewYear, calendarViewMonth, 1);
+      const daysInMonth = new Date(calendarViewYear, calendarViewMonth + 1, 0).getDate();
+      const mondayOffset = (firstDay.getDay() + 6) % 7;
+
+      for (let i = 0; i < mondayOffset; i += 1) {
+        const placeholder = document.createElement("button");
+        placeholder.type = "button";
+        placeholder.className = "calendar-day is-placeholder";
+        placeholder.tabIndex = -1;
+        gridElement.appendChild(placeholder);
+      }
+
+      for (let day = 1; day <= daysInMonth; day += 1) {
+        const isoDate = `${calendarViewYear}-${String(calendarViewMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "calendar-day";
+        button.textContent = String(day);
+        button.dataset.date = isoDate;
+
+        if (isoDate === todayIso) button.classList.add("is-today");
+
+        if (mode === "single") {
+          if (isoDate === selectedSingle) button.classList.add("is-selected-single");
+        } else {
+          if (selectedRangeStart && isoDate === selectedRangeStart) button.classList.add("is-selected-start");
+          if (selectedRangeEnd && isoDate === selectedRangeEnd) button.classList.add("is-selected-end");
+          if (selectedRangeStart && selectedRangeEnd && compareIsoDates(isoDate, selectedRangeStart) > 0 && compareIsoDates(isoDate, selectedRangeEnd) < 0) {
+            button.classList.add("is-in-range");
+          }
+        }
+
+        button.addEventListener("click", () => {
+          if (mode === "single") {
+            selectedSingle = isoDate;
+            renderCalendars();
+            return;
+          }
+
+          if (!selectedRangeStart || selectedRangeEnd) {
+            selectedRangeStart = isoDate;
+            selectedRangeEnd = "";
+            renderCalendars();
+            return;
+          }
+
+          if (compareIsoDates(isoDate, selectedRangeStart) < 0) {
+            selectedRangeEnd = selectedRangeStart;
+            selectedRangeStart = isoDate;
+          } else {
+            selectedRangeEnd = isoDate;
+          }
+          renderCalendars();
+        });
+
+        gridElement.appendChild(button);
+      }
+
+      if (mode === "single") {
+        selectionElement.textContent = selectedSingle ? `Выбрана дата: ${formatDate(selectedSingle)}` : "Выберите дату";
+        return;
+      }
+
+      if (selectedRangeStart && selectedRangeEnd) {
+        selectionElement.textContent = `Период: ${formatDate(selectedRangeStart)} – ${formatDate(selectedRangeEnd)}`;
+      } else if (selectedRangeStart) {
+        selectionElement.textContent = `Начало периода: ${formatDate(selectedRangeStart)} (выберите вторую дату)`;
+      } else {
+        selectionElement.textContent = "Выберите период";
+      }
+    }
+
+    function renderCalendars() {
+      renderCalendarGrid(calendarGrid, calendarMonthLabel, calendarSelection, "range");
+      renderCalendarGrid(calendarGridSingle, calendarMonthLabelSingle, calendarSelectionSingle, "single");
+    }
+
+    function applyDateSelection() {
+      if (activeDateMode === "single") {
+        const value = formatDate(selectedSingle);
+        if (value) deliveryPeriod.value = value;
+        return;
+      }
+
+      const from = formatDate(selectedRangeStart);
+      const to = formatDate(selectedRangeEnd || selectedRangeStart);
+      if (from && to) {
+        deliveryPeriod.value = `${from} – ${to}`;
+      } else if (from) {
+        deliveryPeriod.value = from;
+      } else if (to) {
+        deliveryPeriod.value = to;
+      }
+    }
+
+    function openDatePanel() {
+      closeAllDropdowns();
+      closeSearchCriteria();
+      datePanel.hidden = false;
+      dateField.classList.add("open");
+      renderCalendars();
+    }
+
+    function closeDatePanel() {
+      datePanel.hidden = true;
+      dateField.classList.remove("open");
+    }
+
+    function applySearchMode(mode) {
+      if (!searchModeLabels[mode]) return;
+      activeSearchMode = mode;
+      criteriaButtons.forEach((button) => {
+        button.classList.toggle("is-active", button.dataset.searchMode === mode);
+      });
+      fioSearch.placeholder = `Поиск по ${searchModeLabels[mode]}`;
+      updateFindButtonState();
+      applyFilters();
+    }
+
+    function hasLocationSelection() {
+      return Boolean(String(regionSelect.value || "").trim()) || Boolean(String(citySelect.value || "").trim());
+    }
+
+    function updateFindButtonState() {
+      const isEnabled = !requireFindAfterReset || hasLocationSelection();
+      findBtn.disabled = !isEnabled;
+      findBtn.classList.toggle("enabled", isEnabled);
     }
 
     function showState(name) {
@@ -551,42 +1704,249 @@
       loadingTimer = null;
     }
 
-    function hasResults() {
-      return region.value === "Москва" || city.value === "Москва";
+    function getTriggerText(trigger, option) {
+      if (!option) return trigger?.dataset.defaultLabel || "";
+      if (option.dataset.value !== "") return option.textContent;
+      return trigger?.dataset.defaultLabel || option.textContent;
+    }
+
+    function updateMultiTriggerText(trigger, values) {
+      const label = trigger?.dataset.defaultLabel || "Фильтр";
+      const text = values.length ? values.join(", ") : "Все";
+      trigger.textContent = `${label}: ${text}`;
     }
 
     form.addEventListener("submit", (event) => {
       event.preventDefault();
-      if (findBtn.disabled) return;
-
-      showState("loading");
-      clearLoadingTimer();
-
-      loadingTimer = setTimeout(() => {
-        if (hasResults()) {
-          tableCity.textContent = city.value || "Москва";
-          tableTitle.textContent = `Найдено 1 заявка (${region.value || city.value})`;
-          showState("table");
+      if (requireFindAfterReset) {
+        if (!hasLocationSelection()) {
+          showState("empty");
+          updateFindButtonState();
           return;
         }
-
-        showState("empty");
-      }, 850);
+        requireFindAfterReset = false;
+      }
+      applyFilters({ force: true });
     });
 
     backToEmpty.addEventListener("click", () => {
+      resetFilters();
+      requireFindAfterReset = true;
       showState("empty");
+      updateFindButtonState();
+      closeSearchCriteria();
+      closeDatePanel();
+      closeAllDropdowns();
     });
 
-    region.addEventListener("change", updateFindButtonState);
-    city.addEventListener("change", updateFindButtonState);
-    operation.addEventListener("change", updateReasonState);
+    dropdowns.forEach((dropdown) => {
+      const trigger = dropdown.querySelector("[data-dropdown-trigger]");
+      const menu = dropdown.querySelector("[data-dropdown-menu]");
+      const hiddenInput = dropdown.querySelector('input[type="hidden"]');
+      if (!trigger || !menu || !hiddenInput) return;
+      const isMulti = menu.dataset.multiselect === "true";
+      const options = Array.from(dropdown.querySelectorAll(".dropdown-option"));
+      const checkboxes = Array.from(dropdown.querySelectorAll('input[type="checkbox"][data-option-value]'));
+
+      if (isMulti) {
+        const initialValues = splitMultiValue(hiddenInput.value);
+        checkboxes.forEach((checkbox) => {
+          checkbox.checked = initialValues.includes(checkbox.dataset.optionValue || "");
+        });
+        updateMultiTriggerText(trigger, initialValues);
+      } else {
+        if (options.length === 0) return;
+        const activeOption = options.find((option) => option.classList.contains("is-active")) || options[0];
+        hiddenInput.value = activeOption.dataset.value || "";
+        trigger.textContent = getTriggerText(trigger, activeOption);
+      }
+
+      trigger.addEventListener("click", () => {
+        const isOpen = !menu.hidden;
+        closeAllDropdowns(dropdown);
+        closeSearchCriteria();
+        closeDatePanel();
+        if (isOpen) {
+          dropdown.classList.remove("open");
+          menu.hidden = true;
+          return;
+        }
+        dropdown.classList.add("open");
+        menu.hidden = false;
+        const searchInput = dropdown.querySelector("[data-dropdown-search]");
+        if (searchInput) {
+          searchInput.value = "";
+          const filteredOptions = Array.from(dropdown.querySelectorAll(".dropdown-option"));
+          filteredOptions.forEach((option) => { option.hidden = false; });
+          setTimeout(() => searchInput.focus(), 0);
+        }
+      });
+
+      if (isMulti) {
+        checkboxes.forEach((checkbox) => {
+          checkbox.addEventListener("change", () => {
+            const values = checkboxes
+              .filter((item) => item.checked)
+              .map((item) => item.dataset.optionValue || "")
+              .filter(Boolean);
+            hiddenInput.value = serializeMultiValue(values);
+            updateMultiTriggerText(trigger, values);
+            updateFindButtonState();
+            applyFilters();
+          });
+        });
+        return;
+      }
+
+      options.forEach((option) => {
+        option.addEventListener("click", () => {
+          options.forEach((item) => item.classList.remove("is-active"));
+          option.classList.add("is-active");
+          hiddenInput.value = option.dataset.value || "";
+          trigger.textContent = getTriggerText(trigger, option);
+          dropdown.classList.remove("open");
+          menu.hidden = true;
+          updateFindButtonState();
+          applyFilters();
+        });
+      });
+    });
+
+    searchableDropdownInputs.forEach((searchInput) => {
+      searchInput.addEventListener("input", () => {
+        const parentDropdown = searchInput.closest("[data-dropdown]");
+        if (!parentDropdown) return;
+        const value = searchInput.value.trim().toLowerCase();
+        const options = Array.from(parentDropdown.querySelectorAll(".dropdown-option"));
+        options.forEach((option, index) => {
+          if (index === 0) {
+            option.hidden = false;
+            return;
+          }
+          option.hidden = value ? !option.textContent.toLowerCase().includes(value) : false;
+        });
+      });
+
+      searchInput.addEventListener("keydown", (event) => {
+        event.stopPropagation();
+      });
+    });
+
+    function toggleDetailsRow(requestNo) {
+      if (!requestNo) return;
+      const detailsRow = tableBody.querySelector(`[data-details-row="${requestNo}"]`);
+      if (!detailsRow) return;
+      const isOpen = !detailsRow.hidden;
+      detailsRow.hidden = isOpen;
+    }
+
+    let rowPointerStart = null;
+    let rowPointerMoved = false;
+    let skipNextRowToggle = false;
+
+    tableBody.addEventListener("pointerdown", (event) => {
+      const row = event.target.closest(".result-row");
+      if (!row) return;
+      rowPointerStart = { x: event.clientX, y: event.clientY };
+      rowPointerMoved = false;
+    });
+
+    tableBody.addEventListener("pointermove", (event) => {
+      if (!rowPointerStart) return;
+      const dx = Math.abs(event.clientX - rowPointerStart.x);
+      const dy = Math.abs(event.clientY - rowPointerStart.y);
+      if (dx > 4 || dy > 4) rowPointerMoved = true;
+    });
+
+    tableBody.addEventListener("pointerup", () => {
+      if (rowPointerMoved) skipNextRowToggle = true;
+      rowPointerStart = null;
+      rowPointerMoved = false;
+    });
+
+    tableBody.addEventListener("pointercancel", () => {
+      rowPointerStart = null;
+      rowPointerMoved = false;
+    });
+
+    tableBody.addEventListener("click", (event) => {
+      const row = event.target.closest(".result-row");
+      if (!row) return;
+      if (skipNextRowToggle) {
+        skipNextRowToggle = false;
+        return;
+      }
+
+      const selection = window.getSelection ? window.getSelection() : null;
+      if (selection && !selection.isCollapsed) return;
+
+      if (event.target.closest(".cell-text, .photo-thumb, a, input, textarea, select, label, button")) return;
+      if (!event.target.closest("td.result-cell")) return;
+
+      toggleDetailsRow(row.dataset.requestRow);
+    });
+
+    searchField.addEventListener("click", (event) => {
+      if (event.target.closest(".criteria-chip")) return;
+      openSearchCriteria();
+    });
+
+    dateField.addEventListener("click", (event) => {
+      if (event.target.closest(".date-panel")) return;
+      openDatePanel();
+    });
+
+    criteriaButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        applySearchMode(button.dataset.searchMode);
+        closeSearchCriteria();
+        fioSearch.focus();
+      });
+    });
+
+    dateTabs.forEach((tab) => {
+      tab.addEventListener("click", () => {
+        setDateMode(tab.dataset.dateMode);
+      });
+    });
+
+    calendarPrev.addEventListener("click", () => shiftCalendarMonth(-1));
+    calendarNext.addEventListener("click", () => shiftCalendarMonth(1));
+    calendarPrevSingle.addEventListener("click", () => shiftCalendarMonth(-1));
+    calendarNextSingle.addEventListener("click", () => shiftCalendarMonth(1));
+
+    applyDateBtn.addEventListener("click", () => {
+      applyDateSelection();
+      closeDatePanel();
+    });
+
+    document.addEventListener("pointerdown", (event) => {
+      const target = event.target;
+      if (!searchField.contains(target)) closeSearchCriteria();
+      if (!dateField.contains(target)) closeDatePanel();
+      if (!dropdowns.some((dropdown) => dropdown.contains(target))) closeAllDropdowns();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") return;
+      closeSearchCriteria();
+      closeDatePanel();
+      closeAllDropdowns();
+    });
+
+    fioSearch.addEventListener("input", () => {
+      updateFindButtonState();
+      applyFilters();
+    });
 
     window.addEventListener("beforeunload", clearLoadingTimer);
 
+    setDateMode(activeDateMode);
+    applyDateSelection();
+    applySearchMode(activeSearchMode);
+    renderResultsRows(baseRows);
     updateFindButtonState();
-    updateReasonState();
-    showState("empty");
+    showState("table");
   </script>
   <script src="../_shared/feedback-widget.js"></script>
 </body>
