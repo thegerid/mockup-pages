@@ -159,6 +159,14 @@
         font-size: 13px;
         word-break: break-all;
       }
+      .path.is-copyable {
+        cursor: pointer;
+        transition: 140ms ease;
+      }
+      .path.is-copyable:hover {
+        border-color: rgba(15, 118, 110, 0.35);
+        background: #f5fbfa;
+      }
 
       .auth-overlay {
         position: fixed;
@@ -398,6 +406,7 @@
 
     <script>
       const publicBaseUrl = "https://xn--80akhjhbm1b7e.xn--p1ai";
+      const displayPublicBaseUrl = "https://моимакеты.рф";
       const mockups = [
         {
           id: "delivery-exchange",
@@ -438,12 +447,17 @@
           tag: "Canvas",
           path: "./mockups/client-photo-wp/index.html",
           publishPath: "/mockups/client-photo-wp/",
-          description: "Отдельный интерактивный canvas-макет экрана онбординга с фиксацией фото клиента и welcome-pack.",
+          deepLink: {
+            type: "tab",
+            param: "tab",
+            defaultValue: "wp-onboarding"
+          },
+          description: "Единый WP-проект с вкладками: мобильный экран онбординга и витрина проверки фото в SFAD.",
           requirements: [
-            "Экран максимально близок к мобильному референсу",
-            "Карточка фото открывает выбор файла и показывает превью",
-            "Есть валидация перед завершением встречи",
-            "Добавлен success state и меню действий по встрече"
+            "Два отдельных макета внутри одной папки проекта",
+            "Вкладки и deep-link через параметр tab для прямого открытия нужного экрана",
+            "Мобильный сценарий с загрузкой фото клиента и welcome-pack",
+            "Десктопная SFAD-витрина с фильтрами, поиском и empty state"
           ]
         }
       ];
@@ -495,6 +509,15 @@
         return url.toString();
       }
 
+      function buildDisplayPublicUrl(mockup) {
+        const url = new URL(mockup.publishPath, `${displayPublicBaseUrl}/`);
+        if (mockup.deepLink?.type === "tab") {
+          const tab = getState(mockup).tab;
+          if (tab) url.searchParams.set(mockup.deepLink.param || "tab", tab);
+        }
+        return url.toString();
+      }
+
       function buildPreviewUrl(mockup) {
         if (mockup.deepLink?.type !== "tab") return mockup.path;
         const tab = getState(mockup).tab;
@@ -514,8 +537,11 @@
       function syncProjectActions() {
         if (!selected) return;
         const publicUrl = buildPublicUrl(selected);
+        const displayUrl = buildDisplayPublicUrl(selected);
         openLink.href = publicUrl;
-        pathBox.textContent = publicUrl;
+        pathBox.textContent = displayUrl;
+        pathBox.title = "Нажмите, чтобы скопировать ссылку";
+        pathBox.classList.add("is-copyable");
       }
 
       function renderList() {
@@ -544,6 +570,8 @@
           openLink.href = `${publicBaseUrl}/`;
           projectActions.forEach((el) => el.classList.add("is-hidden"));
           pathBox.textContent = "Сначала выберите проект";
+          pathBox.title = "";
+          pathBox.classList.remove("is-copyable");
           requirements.innerHTML = "";
           copyBtn.textContent = "Скопировать путь";
           if (!isLocalShowroom) openShowroomLink.classList.add("is-hidden");
@@ -563,7 +591,7 @@
 
       copyBtn.addEventListener("click", async () => {
         if (!selected) return;
-        const text = buildPublicUrl(selected);
+        const text = buildDisplayPublicUrl(selected);
         try {
           await navigator.clipboard.writeText(text);
           copyBtn.textContent = "Путь скопирован";
@@ -572,6 +600,22 @@
           copyBtn.textContent = "Не удалось";
           setTimeout(() => { copyBtn.textContent = "Скопировать путь"; }, 1200);
         }
+      });
+
+      pathBox.addEventListener("click", async () => {
+        if (!selected) return;
+        const text = buildDisplayPublicUrl(selected);
+        try {
+          await navigator.clipboard.writeText(text);
+          pathBox.textContent = "Ссылка скопирована";
+          setTimeout(() => {
+            if (!selected) {
+              pathBox.textContent = "Сначала выберите проект";
+              return;
+            }
+            pathBox.textContent = buildDisplayPublicUrl(selected);
+          }, 1200);
+        } catch {}
       });
 
       openShowroomLink.addEventListener("click", (e) => {

@@ -1,0 +1,593 @@
+﻿<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+  <title>Витрина проверки фото WP в SFAD</title>
+  <style>
+    :root {
+      --bg: #dfe1e5;
+      --panel: #f3f4f6;
+      --panel-white: #f8f8f9;
+      --line: #d5d7dc;
+      --text: #0f1115;
+      --muted: #737883;
+      --chip-bg: #e3e5e9;
+      --chip-text: #1f232b;
+      --chip-muted: #9ba0ab;
+      --shadow: 0 2px 8px rgba(22, 27, 36, 0.12);
+      --radius-lg: 10px;
+      --radius-md: 8px;
+      --accent: #22b455;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+    .app {
+      min-height: 100%;
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      gap: 16px;
+      padding-bottom: 20px;
+    }
+
+    .topbar {
+      min-height: 92px;
+      padding: 16px 18px 8px 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(223, 225, 229, 0.92);
+      border-bottom: 1px solid #d0d3d9;
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: clamp(34px, 3vw, 46px);
+      font-weight: 500;
+      letter-spacing: 0.2px;
+      line-height: 1.06;
+      color: #020407;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      color: #3f4550;
+      padding-right: 10px;
+      white-space: nowrap;
+    }
+
+    .dot {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 4px solid var(--accent);
+      background: transparent;
+      margin-right: 8px;
+    }
+
+    .top-name {
+      font-size: 29px;
+      font-weight: 600;
+      transform: scale(0.42);
+      transform-origin: left center;
+      width: 470px;
+      margin-left: -122px;
+      color: #12151a;
+    }
+
+    .top-icon {
+      width: 18px;
+      height: 18px;
+      opacity: 0.6;
+      border-radius: 4px;
+      border: 2px solid #868b95;
+    }
+
+    .panel {
+      margin: 0 6px;
+      background: var(--panel-white);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+    }
+
+    .filters {
+      padding: 10px;
+    }
+
+    .row-main {
+      display: grid;
+      grid-template-columns: minmax(190px, 252px) minmax(190px, 252px) 116px;
+      gap: 10px;
+      margin-bottom: 10px;
+      align-items: stretch;
+    }
+
+    .field {
+      position: relative;
+      height: 50px;
+      border-radius: var(--radius-md);
+      border: 1px solid #d8dbe1;
+      background: #e3e5e9;
+      overflow: hidden;
+    }
+
+    .field select {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: #727885;
+      font-size: 26px;
+      transform: scale(0.42);
+      transform-origin: left center;
+      padding: 0 84px 0 54px;
+      appearance: none;
+      cursor: pointer;
+    }
+
+    .field::after {
+      content: "";
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      margin-top: -6px;
+      border-right: 2px solid #7d8390;
+      border-bottom: 2px solid #7d8390;
+      transform: rotate(45deg);
+      pointer-events: none;
+    }
+
+    .btn-find {
+      border: 1px solid #d8dbe1;
+      border-radius: var(--radius-md);
+      background: #e6e8ec;
+      color: #9ea3ad;
+      font-size: 26px;
+      transform: scale(0.42);
+      transform-origin: left center;
+      width: 240px;
+      height: 50px;
+      margin-left: 0;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .btn-find.enabled {
+      background: #d5dae2;
+      color: #252b36;
+      border-color: #c8ced8;
+    }
+
+    .row-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .chip {
+      position: relative;
+      height: 30px;
+      border-radius: 6px;
+      border: 1px solid #d8dbe1;
+      background: var(--chip-bg);
+      overflow: hidden;
+      min-width: 130px;
+    }
+
+    .chip select {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--chip-text);
+      font-size: 24px;
+      transform: scale(0.42);
+      transform-origin: left center;
+      padding: 0 64px 0 42px;
+      appearance: none;
+      cursor: pointer;
+    }
+
+    .chip::after {
+      content: "";
+      position: absolute;
+      right: 9px;
+      top: 50%;
+      width: 6px;
+      height: 6px;
+      margin-top: -5px;
+      border-right: 2px solid #717786;
+      border-bottom: 2px solid #717786;
+      transform: rotate(45deg);
+      pointer-events: none;
+    }
+
+    .chip[aria-disabled="true"] {
+      background: #eceef2;
+    }
+
+    .chip[aria-disabled="true"] select {
+      color: var(--chip-muted);
+      cursor: not-allowed;
+    }
+
+    .result {
+      min-height: 255px;
+      padding: 20px;
+      display: grid;
+    }
+
+    .empty,
+    .loading,
+    .table-wrap {
+      border-radius: var(--radius-lg);
+      background: #f7f7f8;
+      border: 1px solid #d8dbe0;
+      min-height: 255px;
+    }
+
+    .empty {
+      display: grid;
+      place-items: center;
+      text-align: center;
+      gap: 10px;
+      padding: 20px;
+    }
+
+    .empty-icon {
+      width: 58px;
+      height: 58px;
+      border-radius: 18px;
+      border: 1px solid #d8dbe0;
+      background: #eceef2;
+      display: grid;
+      place-items: center;
+      position: relative;
+    }
+
+    .empty-icon::before {
+      content: "";
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 4px solid #707784;
+      transform: translate(-3px, -3px);
+    }
+
+    .empty-icon::after {
+      content: "";
+      position: absolute;
+      width: 9px;
+      height: 4px;
+      border-radius: 99px;
+      background: #707784;
+      transform: rotate(45deg) translate(8px, 7px);
+    }
+
+    .empty h2 {
+      margin: 0;
+      font-size: 35px;
+      line-height: 1;
+      transform: scale(0.42);
+    }
+
+    .empty p {
+      margin: 0;
+      color: #343941;
+      font-size: 30px;
+      transform: scale(0.42);
+      width: 760px;
+      max-width: 100%;
+    }
+
+    .loading {
+      display: none;
+      place-items: center;
+      text-align: center;
+      color: #444c59;
+      gap: 12px;
+      font-size: 15px;
+    }
+
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 3px solid #d6dae2;
+      border-top-color: #4d5564;
+      animation: spin 0.9s linear infinite;
+    }
+
+    .table-wrap {
+      display: none;
+      padding: 12px;
+    }
+
+    .table-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .table-head strong {
+      font-size: 13px;
+      color: #202531;
+    }
+
+    .btn-reset {
+      border: 1px solid #d3d9e3;
+      border-radius: 8px;
+      background: #fff;
+      color: #2a3140;
+      padding: 7px 10px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border: 1px solid #d8dce4;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 10px;
+      border-bottom: 1px solid #e9ecf2;
+      font-size: 12px;
+      color: #1f2430;
+    }
+
+    th {
+      background: #f2f4f8;
+      color: #5d6676;
+      font-weight: 600;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 1020px) {
+      .topbar {
+        padding-left: 10px;
+      }
+
+      .topbar h1 {
+        font-size: 34px;
+      }
+
+      .top-name,
+      .top-icon,
+      .dot { display: none; }
+
+      .row-main {
+        grid-template-columns: 1fr;
+      }
+
+      .btn-find {
+        transform: none;
+        width: 100%;
+      }
+
+      .field select,
+      .chip select,
+      .empty h2,
+      .empty p {
+        transform: none;
+        padding-left: 14px;
+        font-size: 15px;
+      }
+
+      .empty p { width: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <h1>Верификация</h1>
+      <div class="top-actions" aria-hidden="true">
+        <span class="dot"></span>
+        <span class="top-name">Михаил Михайлович Московский</span>
+        <span class="top-icon"></span>
+        <span class="top-icon" style="width:14px;height:14px;border-radius:2px;"></span>
+      </div>
+    </header>
+
+    <section class="panel filters">
+      <form id="searchForm">
+        <div class="row-main">
+          <label class="field">
+            <select id="region">
+              <option value="" selected>Регион</option>
+              <option value="Москва">Москва</option>
+              <option value="Московская область">Московская область</option>
+              <option value="Санкт-Петербург">Санкт-Петербург</option>
+              <option value="Новосибирская область">Новосибирская область</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <select id="city">
+              <option value="" selected>Города или ЛЦ</option>
+              <option value="Москва">Москва</option>
+              <option value="Мытищи">Мытищи</option>
+              <option value="Красногорск">Красногорск</option>
+              <option value="ЛЦ Север">ЛЦ Север</option>
+            </select>
+          </label>
+
+          <button id="findBtn" class="btn-find" type="submit" disabled>Найти</button>
+        </div>
+
+        <div class="row-chips">
+          <label class="chip"><select id="request"><option value="">Номер заявки</option><option>127532</option><option>127650</option><option>128001</option></select></label>
+          <label class="chip"><select id="days"><option value="">Дни на верификации</option><option>1 день</option><option>2-3 дня</option><option>4+ дней</option></select></label>
+          <label class="chip"><select id="product"><option value="">Тип продукта</option><option>Карта</option><option>Кредит</option><option>Пакет услуг</option></select></label>
+          <label class="chip"><select id="operation"><option value="">Тип операции</option><option>Проверка фото</option><option>Повторная проверка</option></select></label>
+
+          <label class="chip" id="reasonChip" aria-disabled="true"><select id="reason" disabled><option value="">Причина операции</option><option>Низкое качество фото</option><option>Повторный запрос от СБ</option></select></label>
+          <label class="chip" id="subReasonChip" aria-disabled="true"><select id="subReason" disabled><option value="">Подпричина</option><option>Размытость</option><option>Плохой свет</option></select></label>
+          <label class="chip"><select id="delivery"><option value="">Срок доставки</option><option>Сегодня</option><option>Завтра</option><option>2+ дней</option></select></label>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel result">
+      <div class="empty" id="emptyState">
+        <div class="empty-icon" aria-hidden="true"></div>
+        <h2>Пока пусто</h2>
+        <p>Выберите регион или город, остальные фильтры и нажмите «Найти»</p>
+      </div>
+
+      <div class="loading" id="loadingState">
+        <div class="spinner" aria-hidden="true"></div>
+        <div>Ищем заявки по выбранным фильтрам...</div>
+      </div>
+
+      <div class="table-wrap" id="tableState">
+        <div class="table-head">
+          <strong id="tableTitle">Найдено 1 заявка</strong>
+          <button type="button" class="btn-reset" id="backToEmpty">Показать пустое состояние</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Номер заявки</th>
+              <th>Город / ЛЦ</th>
+              <th>Тип операции</th>
+              <th>Дни на верификации</th>
+              <th>Срок доставки</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>127650</td>
+              <td id="tableCity">Москва</td>
+              <td>Проверка фото</td>
+              <td>2</td>
+              <td>Сегодня</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const form = document.getElementById("searchForm");
+    const region = document.getElementById("region");
+    const city = document.getElementById("city");
+    const operation = document.getElementById("operation");
+    const reason = document.getElementById("reason");
+    const subReason = document.getElementById("subReason");
+    const reasonChip = document.getElementById("reasonChip");
+    const subReasonChip = document.getElementById("subReasonChip");
+    const findBtn = document.getElementById("findBtn");
+    const emptyState = document.getElementById("emptyState");
+    const loadingState = document.getElementById("loadingState");
+    const tableState = document.getElementById("tableState");
+    const tableTitle = document.getElementById("tableTitle");
+    const tableCity = document.getElementById("tableCity");
+    const backToEmpty = document.getElementById("backToEmpty");
+
+    let loadingTimer = null;
+
+    function updateFindButtonState() {
+      const enabled = Boolean(region.value || city.value);
+      findBtn.disabled = !enabled;
+      findBtn.classList.toggle("enabled", enabled);
+    }
+
+    function updateReasonState() {
+      const enabled = Boolean(operation.value);
+      reason.disabled = !enabled;
+      subReason.disabled = !enabled;
+      reasonChip.setAttribute("aria-disabled", String(!enabled));
+      subReasonChip.setAttribute("aria-disabled", String(!enabled));
+
+      if (!enabled) {
+        reason.value = "";
+        subReason.value = "";
+      }
+    }
+
+    function showState(name) {
+      emptyState.style.display = name === "empty" ? "grid" : "none";
+      loadingState.style.display = name === "loading" ? "grid" : "none";
+      tableState.style.display = name === "table" ? "block" : "none";
+    }
+
+    function clearLoadingTimer() {
+      if (!loadingTimer) return;
+      clearTimeout(loadingTimer);
+      loadingTimer = null;
+    }
+
+    function hasResults() {
+      return region.value === "Москва" || city.value === "Москва";
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      if (findBtn.disabled) return;
+
+      showState("loading");
+      clearLoadingTimer();
+
+      loadingTimer = setTimeout(() => {
+        if (hasResults()) {
+          tableCity.textContent = city.value || "Москва";
+          tableTitle.textContent = `Найдено 1 заявка (${region.value || city.value})`;
+          showState("table");
+          return;
+        }
+
+        showState("empty");
+      }, 850);
+    });
+
+    backToEmpty.addEventListener("click", () => {
+      showState("empty");
+    });
+
+    region.addEventListener("change", updateFindButtonState);
+    city.addEventListener("change", updateFindButtonState);
+    operation.addEventListener("change", updateReasonState);
+
+    window.addEventListener("beforeunload", clearLoadingTimer);
+
+    updateFindButtonState();
+    updateReasonState();
+    showState("empty");
+  </script>
+  <script src="../_shared/feedback-widget.js"></script>
+</body>
+</html>

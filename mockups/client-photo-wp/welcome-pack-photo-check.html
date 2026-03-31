@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg" />
+  <title>Проверка фото клиента с welcome-pack</title>
+  <style>
+    :root{
+      --bg:#f2f4f7;--panel:#fff;--text:#11284a;--muted:#7b8699;--line:#d7dde7;--accent:#202229;
+      --ok:#2fbc6a;--okSoft:#eaf8f0;--bad:#cb4646;--badSoft:#fff2f2;--shadow:0 16px 34px rgba(17,26,43,.1)
+    }
+    *{box-sizing:border-box} html,body{min-height:100%}
+    body{margin:0;min-height:100vh;display:grid;place-items:start center;font:16px/1.4 "Segoe UI",Arial,sans-serif;color:var(--text);
+      background:radial-gradient(circle at top,rgba(255,255,255,.95),transparent 26%),linear-gradient(180deg,#f8f9fc 0%,var(--bg) 100%)}
+    .phone{width:min(390px,100%);min-height:100vh;background:#fff;position:relative;overflow:hidden;border-inline:1px solid #dee4ed}
+    .screen{min-height:100vh;display:flex;flex-direction:column}
+    .page{padding:0 16px 130px}
+    .top-gap{margin-top:20px}
+    .scenario{position:relative;margin-bottom:14px;z-index:20;overflow:visible}
+    .scenario-btn{width:100%;border:1px solid #cfd7e4;border-radius:14px;background:#fff;box-shadow:0 8px 16px rgba(16,28,44,.08);padding:10px 12px;display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;text-align:left;cursor:pointer}
+    .scenario-btn.open{border-bottom-left-radius:0;border-bottom-right-radius:0;box-shadow:none}
+    .scenario-btn small{display:block;color:#5d6b84;font-size:12px}
+    .scenario-btn strong{display:block;margin-top:2px;font-size:14px}
+    .caret{width:10px;height:10px;border-right:2px solid #4e607d;border-bottom:2px solid #4e607d;transform:rotate(45deg);transition:transform .14s}
+    .caret.open{transform:rotate(225deg)}
+    .scenario-list{position:absolute;left:0;right:0;top:100%;margin-top:0;border:1px solid #d7deea;border-top:0;border-radius:0 0 14px 14px;background:#fff;box-shadow:0 8px 16px rgba(16,28,44,.08);overflow:hidden;transform-origin:top;animation:dd .14s ease}
+    .scenario-list button{width:100%;border:0;border-bottom:1px solid #eef1f6;background:#fff;text-align:left;padding:12px;font:inherit;font-size:14px;cursor:pointer}
+    .scenario-list button:last-child{border-bottom:0}
+    .scenario-list button.active{background:#eef4ff;color:#1f4b95;font-weight:700}
+    @keyframes dd{from{opacity:0;transform:scaleY(.92)}to{opacity:1;transform:scaleY(1)}}
+    .head{margin:0 -16px 18px;padding:10px 12px;background:#1e2129;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .hb{border:0;background:transparent;color:#fff;padding:0;font:inherit;font-size:15px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(100% - 48px)}
+    .ha{border:0;background:transparent;color:#fff;font:700 28px/1 "Segoe UI",Arial,sans-serif;cursor:pointer;width:32px;height:32px;display:grid;place-items:center}
+    .on-wrap{padding:0}
+    h1{margin:0 0 24px;font-size:20px;line-height:1.12}
+    .lead{margin:0 0 16px;color:#667589;font-size:16px}
+    .lnk{margin:0 0 14px;color:#1e2a3d;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:4px}
+    .up{width:100%;border:0;border-radius:8px;background:#fff;box-shadow:var(--shadow);padding:14px;display:grid;grid-template-columns:108px minmax(0,1fr);gap:16px;align-items:center;text-align:left;cursor:pointer}
+    .up.invalid{outline:2px solid rgba(203,70,70,.26)}
+    .ph{width:108px;height:74px;border:1px solid #ced5e1;border-radius:10px;background:#fafbfc;display:grid;place-items:center;overflow:hidden;position:relative}
+    .ph img{width:100%;height:100%;object-fit:cover}
+    .cam{width:24px;height:18px;border:1.8px solid #8d97a8;border-radius:4px;position:relative}
+    .cam:before{content:"";position:absolute;width:6px;height:3px;left:3px;top:-5px;border:1.8px solid #8d97a8;border-bottom:0;border-radius:2px 2px 0 0}
+    .cam:after{content:"";position:absolute;inset:0;margin:auto;width:6px;height:6px;border:1.8px solid #8d97a8;border-radius:50%}
+    .mark{position:absolute;left:7px;bottom:7px;width:26px;height:26px;border-radius:50%;background:#2fbc6a;color:#fff;display:grid;place-items:center;font-weight:800}
+    .ut strong{display:block;font-size:17px;line-height:1.14}.ut span{font-size:15px;color:#203250}
+    .hint{margin:10px 4px 0;color:var(--muted);font-size:13px;min-height:18px}
+    .hint.err{color:var(--bad)}
+    .ok{margin:0 -16px 18px;padding:10px 14px;background:#fff;border-top:1px solid #e6ebf3;border-bottom:1px solid #d9dfe9;display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .okl{display:flex;align-items:center;gap:10px}
+    .ok b{width:22px;height:22px;border-radius:50%;background:var(--ok);color:#fff;display:grid;place-items:center;flex:0 0 auto}
+    .ok strong{font-size:15px;color:#1e2a3d}
+    .okx{border:0;background:transparent;color:#1e2a3d;font:400 30px/1 "Segoe UI",Arial,sans-serif;cursor:pointer;padding:0 2px}
+    .foot{position:absolute;left:0;right:0;bottom:0;padding:14px 16px 28px;background:linear-gradient(180deg,rgba(255,255,255,0),#fff 30%,#fff)}
+    .btn,.btn2,.btnDis,.btnOut{width:100%;border-radius:16px;padding:16px 18px;font:inherit;font-weight:700}
+    .btn{border:0;background:var(--accent);color:#fff;cursor:pointer}
+    .btn2{border:1px solid #cfd7e3;background:#fff;color:#25354f;cursor:pointer}
+    .btnDis{border:0;background:#e8ebef;color:#a2a9b6;cursor:not-allowed}
+    .btnOut{border:1.5px solid #232833;background:#fff;color:#232833;cursor:pointer}
+    .stack{display:grid;gap:12px}
+    .checking{min-height:100vh;padding:24px 16px;background:radial-gradient(170px 120px at 84% 10%,rgba(39,126,255,.09),rgba(39,126,255,0) 72%),linear-gradient(180deg,#f9fbff,#f0f3f9)}
+    .state{display:flex;gap:10px;align-items:center;margin-bottom:12px}
+    .state small{font-size:17px;font-weight:700;color:#2d3442}
+    .sd{width:20px;height:20px;border-radius:50%;border:2px solid #ccd3de;border-top-color:#7f8ca3;animation:spinMini .85s linear infinite}
+    .line{height:1px;background:#d8dee8;margin-bottom:16px}
+    .ring{width:168px;height:168px;border-radius:50%;margin:28px auto 16px;position:relative;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at 30% 28%,rgba(102,235,255,.25),transparent 42%),radial-gradient(circle at 70% 70%,rgba(122,106,255,.24),transparent 45%),radial-gradient(circle,#0f1728 40%,#070c14 100%);box-shadow:0 0 0 1px rgba(80,214,255,.2),0 0 34px rgba(73,169,255,.25)}
+    .ring:before{content:"";position:absolute;inset:-16%;border-radius:50%;background:conic-gradient(from 0deg,transparent 0 24%,rgba(64,233,255,.92) 36%,transparent 49%,rgba(122,106,255,.85) 62%,transparent 78%,rgba(78,205,255,.95) 92%,transparent 100%);animation:spin 1.9s linear infinite}
+    .core{width:52px;height:52px;border-radius:50%;border:2px solid rgba(110,224,255,.75);box-shadow:0 0 20px rgba(109,221,255,.45);position:relative;z-index:1}
+    .core:before,.core:after{content:"";position:absolute;top:50%;margin-top:-4px;width:8px;height:8px;border-radius:50%;background:#79e9ff}
+    .core:before{left:-20px;animation:pulse 1.2s ease infinite}
+    .core:after{right:-20px;animation:pulse 1.2s ease infinite .25s}
+    .ct{text-align:center;margin:0 0 8px;font-size:24px}
+    .cc{text-align:center;margin:0 0 10px;color:#697891}
+    .attempt{text-align:center;margin:0 0 10px;color:#3f5577;font-weight:700}
+    .cd{text-align:center;font-size:14px;color:#4d5f7c}
+    .result{min-height:100vh;padding:24px 16px 130px;display:flex;flex-direction:column;background:radial-gradient(160px 120px at 84% 10%,rgba(31,124,246,.08),rgba(31,124,246,0) 72%),linear-gradient(180deg,#fbfcfe,#f2f5f9)}
+    .card{border:1px solid #e4e9f1;border-radius:24px;background:rgba(255,255,255,.9);box-shadow:var(--shadow);padding:26px 18px 20px;text-align:center}
+    .ri{width:70px;height:70px;border-radius:22px;margin:0 auto 16px;display:grid;place-items:center;font-size:32px;color:#fff}
+    .ri.ok{background:linear-gradient(180deg,#28b56c,#149653)} .ri.bad{background:linear-gradient(180deg,#ff6f6f,#e04242)}
+    .card h2{margin:0 0 8px;font-size:28px;line-height:1.08}
+    .card p{margin:0 0 10px;color:#6b7688}
+    .note{margin-top:12px;padding:12px;border-radius:14px;text-align:left}
+    .note.ok{background:linear-gradient(180deg,#effcf4,#e0f7e8);border:1px solid #bfebcc;color:#225335}
+    .note.bad{background:linear-gradient(180deg,#fff8f8,#fff1f1);border:1px solid #ffd9d9;color:#6f2f2f}
+    .sp{flex:1}
+    .final{min-height:100vh;padding:24px 14px 30px;background:#f3f4f6}
+    .fstate{display:flex;gap:10px;align-items:center;margin-bottom:14px}.fstate small{font-size:17px;font-weight:700;color:#2d3442}
+    .fline{height:1px;background:#dadee6;margin:0 -14px 18px}
+    .tick{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;margin:54px auto 16px;background:#2fbc6a;color:#fff;font-size:38px;line-height:1}
+    .fname{margin:0 0 4px;text-align:center;font-size:36px;line-height:1.2;color:#2c2f35}
+    .fsub{margin:0 0 26px;text-align:center;color:#8b919d;font-size:30px}
+    .sheet-bg{position:fixed;inset:0;background:rgba(14,21,33,.3);display:none;z-index:4}
+    .sheet-bg.show{display:block}
+    .sheet{position:absolute;left:0;right:0;bottom:0;z-index:7;padding:10px 16px 24px;border-radius:24px 24px 0 0;background:#fff;box-shadow:0 -18px 36px rgba(13,20,31,.16);transform:translateY(100%);transition:transform .18s}
+    .sheet.show{transform:translateY(0)}
+    .sh{width:44px;height:5px;border-radius:999px;background:#d5dae3;margin:0 auto 16px}
+    .sheet h3{margin:0 0 12px;font-size:18px}
+    .sa{display:grid;gap:10px}.sa button{border:1px solid #e5e9f0;border-radius:14px;background:#fff;padding:14px 16px;font:inherit;text-align:left;color:var(--text);cursor:pointer}
+    .sa button[data-v="danger"]{color:var(--bad);background:var(--badSoft);border-color:#ffd6d6}
+    .toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%) translateY(10px);min-width:240px;max-width:calc(100vw - 32px);padding:12px 14px;border-radius:12px;background:rgba(22,26,33,.94);color:#fff;opacity:0;pointer-events:none;transition:.16s;z-index:9}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .vh{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
+    @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+    @keyframes pulse{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.5);opacity:1}}
+    @keyframes spinMini{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+  <div class="phone">
+    <div id="app"></div>
+    <input class="vh" id="photoInput" type="file" accept="image/*" />
+    <div class="sheet-bg" id="sheetBg"></div>
+    <div class="toast" id="toast"></div>
+  </div>
+  <script>
+    const scenarios=[
+      {id:"1",label:"1. На фото не человек"},
+      {id:"2",label:"2. Загружена фотография в паспорте"},
+      {id:"3",label:"3. Несовпадение фото паспорт-клиент"},
+      {id:"4",label:"4. Несовпадение текущей и имеющихся фото."},
+      {id:"5",label:"5. Успешный сценарий"},
+      {id:"6",label:"6. 3 попытки"}
+    ];
+    const scenarioResult={
+      "1":{title:"Некорректное фото",desc:"Вы сфотографировали лошадь, а нужно клиента.",note:"Сделайте новое фото при хорошем освещении. В кадре должно быть лицо клиента."},
+      "2":{title:"Обнаружено фото с паспорта",desc:"Загружено изображение, сделанное с фотографии в документе.",note:"Нужно сфотографировать клиента в момент встречи, а не фото из документа."},
+      "3":{title:"Несовпадение с фото в паспорте",desc:"Лицо клиента не совпало с фотографией в паспорте.",note:"Проверьте документ и повторите снимок анфас без бликов."},
+      "4":{title:"Несовпадение с предыдущей фотографией",desc:"Текущее фото не совпало с более ранними фото клиента в системе.",note:"Подтвердите личность и повторите фотографирование с четким ракурсом."},
+      "6":{title:"Проверка не завершена",desc:"Автоматическая проверка фотографии клиента завершилась неуспешно.",note:"Начните проверку заново кнопкой «Попробовать еще раз»."}
+    };
+    const st={screen:"onboarding",menu:false,scenarioOpen:false,scenario:"",photo:"",photoName:"",ok:false,error:"",scenarioOut:"",attempt:1,scenario6Done:0};
+    let tCheck=null;
+    const clientName="Фамилия Имя Отчество";
+    const finalName="Фамилия Имя Отчество";
+    const app=document.getElementById("app"),photoInput=document.getElementById("photoInput"),sheetBg=document.getElementById("sheetBg"),toast=document.getElementById("toast");
+    const esc=s=>String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;");
+    const say=m=>{toast.textContent=m;toast.classList.add("show");clearTimeout(say.t);say.t=setTimeout(()=>toast.classList.remove("show"),1800)};
+    const clearCheck=()=>{if(tCheck){clearTimeout(tCheck);tCheck=null}};
+    const sLabel=()=>scenarios.find(x=>x.id===st.scenario)?.label||"Сценарий не выбран";
+    const scenarioUi=()=>`<section class="scenario"><button class="scenario-btn ${st.scenarioOpen?"open":""}" type="button" data-a="toggle-scenario"><span><small>Выбор сценария</small><strong>${esc(sLabel())}</strong></span><span class="caret ${st.scenarioOpen?"open":""}"></span></button>${st.scenarioOpen?`<div class="scenario-list"><button class="${!st.scenario?"active":""}" data-a="pick-s" data-s="">Без сценария</button>${scenarios.map(x=>`<button class="${st.scenario===x.id?"active":""}" data-a="pick-s" data-s="${x.id}">${esc(x.label)}</button>`).join("")}</div>`:""}</section>`;
+    const head=()=>`<header class="head"><button class="hb" type="button" data-a="back">‹ ${clientName}</button><button class="ha" type="button" data-a="menu">!</button></header>`;
+    const sheet=()=>`<div class="sheet ${st.menu?"show":""}"><div class="sh"></div><h3>Действия по встрече</h3><div class="sa"><button data-a="upload">Прикрепить или заменить фото</button><button data-a="demo">Подставить демо-фото</button><button data-a="comment">Добавить комментарий</button><button data-a="close-menu" data-v="danger">Закрыть меню</button></div></div>`;
+    const screenOnboarding=()=>`<div class="screen"><main class="page"><div class="top-gap"></div>${scenarioUi()}${head()}${st.ok?`<div class="ok"><span class="okl"><b>✓</b><strong>Загрузка успешно завершена!</strong></span><button class="okx" type="button" data-a="hide-ok">×</button></div>`:""}<section class="on-wrap"><h1>Онбординг</h1><p class="lead">Спросите клиента, активировал ли он карту</p><p class="lnk">QR-код с ссылкой на Альфа-Онлайн</p><p class="lnk">Как подключить цифровой профиль</p><p class="lnk">Если клиент активировал карту</p><p class="lnk">Если клиент не активировал карту</p><button class="up ${st.error?"invalid":""}" type="button" data-a="upload"><div class="ph">${st.photo?`<img src="${st.photo}" alt="Фото клиента с welcome-pack"><span class="mark">✓</span>`:`<span class="cam"></span>`}</div><div class="ut"><strong>Клиент с welcome-pack</strong><span>1 фото</span></div></button><div class="hint ${st.error?"err":""}">${st.error||""}</div></section></main><footer class="foot"><button class="btn" type="button" data-a="send">Отправить фото</button></footer>${sheet()}</div>`;
+    const screenChecking=()=>`<div class="screen"><main class="checking"><div class="state"><span class="sd"></span><small>Проводится проверка фотографии клиента</small></div><div class="line"></div><div class="ring"><div class="core"></div></div><h1 class="ct">Проверяем фото клиента</h1>${st.scenario==="6"?`<div class="attempt">попытка ${st.attempt} из 3</div>`:""}<div class="cd">Пожалуйста, подождите...</div></main></div>`;
+    const screenScenarioOk=()=>`<div class="screen"><main class="result"><div class="card"><div class="ri ok">✓</div><h2>Проверка фото выполнена успешно</h2><p>Фото клиента прошло автоматическую проверку и подтверждено системой.</p><div class="note ok">Можно завершить встречу и перейти к итоговому экрану выдачи.</div></div><div class="sp"></div><div class="stack"><button class="btn" data-a="finish">Завершить встречу</button></div></main></div>`;
+    const screenScenarioBad=()=>{const r=scenarioResult[st.scenarioOut];return `<div class="screen"><main class="result"><div class="card"><div class="ri bad">!</div><h2>${esc(r.title)}</h2><p>${esc(r.desc)}</p><div class="note bad">${esc(r.note)}</div></div><div class="sp"></div><div class="stack"><button class="btn2" data-a="to-onboarding">Попробовать еще раз</button></div></main></div>`};
+    const screenScenarioThreeAttempts=()=>`<div class="screen"><main class="result"><div class="card"><div class="ri bad">!</div><h2>Не удалось выполнить проверку фотографии клиента</h2><p>Фото клиента не прошло автоматическую проверку, событие будет сохранено и помечено для дальнейшей проверки.</p><div class="note bad">Можно завершить встречу и перейти к итоговому экрану выдачи.</div></div><div class="sp"></div><div class="stack"><button class="btn" data-a="finish">Завершить встречу</button></div></main></div>`;
+    const screenFinal=()=>`<div class="screen"><main class="final"><div class="fstate"><span class="sd"></span><small>Проводится проверка документов</small></div><div class="fline"></div><div class="tick">✓</div><h1 class="fname">${finalName}</h1><p class="fsub">Карта выдана клиенту</p><div class="stack"><button class="btnDis" disabled>Подключить кредитный лимит</button><button class="btnDis" disabled>Выдать кредитную карту</button><button class="btn" data-a="one-more">Еще один продукт</button><button class="btnOut" data-a="to-meetings">Перейти ко всем встречам</button></div></main></div>`;
+    function render(){app.innerHTML=st.screen==="onboarding"?screenOnboarding():st.screen==="checking"?screenChecking():st.screen==="scenario-ok"?screenScenarioOk():st.screen==="scenario-bad"?screenScenarioBad():st.screen==="scenario-3tries"?screenScenarioThreeAttempts():screenFinal();sheetBg.classList.toggle("show",st.menu||st.scenarioOpen)}
+    function goOnboarding(openUpload){clearCheck();st.screen="onboarding";st.menu=false;st.scenarioOpen=false;st.error="";render();if(openUpload){photoInput.value="";photoInput.click()}}
+    function startCheck(){clearCheck();st.screen="checking";st.menu=false;st.scenarioOpen=false;st.attempt=st.scenario==="6"?Math.min(st.scenario6Done+1,3):1;render();tCheck=setTimeout(()=>{clearCheck();if(st.scenario==="6"){st.scenario6Done+=1;if(st.scenario6Done>=3){st.scenario6Done=0;st.screen="scenario-3tries"}else{st.scenarioOut="6";st.screen="scenario-bad"}render();return}if(!st.scenario){st.screen="final"}else if(st.scenario==="5"){st.screen="scenario-ok"}else{st.scenarioOut=st.scenario;st.screen="scenario-bad"}render()},3000)}
+    app.addEventListener("click",e=>{const b=e.target.closest("[data-a]");if(!b)return;const a=b.dataset.a;
+      if(a==="toggle-scenario"){st.scenarioOpen=!st.scenarioOpen;st.menu=false;return render()}
+      if(a==="pick-s"){st.scenario=b.dataset.s||"";st.scenarioOpen=false;return render()}
+      if(a==="menu"){st.menu=!st.menu;st.scenarioOpen=false;return render()}
+      if(a==="close-menu"){st.menu=false;return render()}
+      if(a==="upload"){st.menu=false;st.scenarioOpen=false;render();photoInput.value="";photoInput.click();return}
+      if(a==="demo"){st.photo="data:image/svg+xml;utf8,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="320" height="220" viewBox="0 0 320 220"><defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop offset="0%" stop-color="#dfe8f8"/><stop offset="100%" stop-color="#f8e2d8"/></linearGradient></defs><rect width="320" height="220" fill="url(#g)"/><rect x="20" y="128" width="146" height="70" rx="16" fill="#fff" opacity=".94"/><rect x="182" y="40" width="92" height="146" rx="18" fill="#1f232b"/><circle cx="228" cy="82" r="24" fill="#f5c2a4"/><text x="30" y="34" font-family="Segoe UI, Arial" font-size="18" fill="#11284a">welcome-pack</text></svg>`);st.photoName="demo-photo.svg";st.ok=true;st.error="";st.menu=false;render();say("Демо-фото подставлено");return}
+      if(a==="comment"){st.menu=false;render();say("Комментарий можно вынести в отдельный bottom sheet.");return}
+      if(a==="hide-ok"){st.ok=false;render();return}
+      if(a==="send"){st.error="";startCheck();return}
+      if(a==="finish"){st.screen="final";return render()}
+      if(a==="retry"){goOnboarding(true);return}
+      if(a==="to-onboarding"){goOnboarding(false);return}
+      if(a==="one-more"){say("Можно открыть сценарий выдачи следующего продукта.");return}
+      if(a==="to-meetings"){st.photo="";st.photoName="";st.ok=false;goOnboarding(false);say("Возврат к списку встреч можно связать с отдельной страницей.");return}
+      if(a==="back"){if(st.screen==="onboarding"){say("Назад можно связать с предыдущим шагом встречи.");return}goOnboarding(false)}
+    });
+    sheetBg.addEventListener("click",()=>{st.menu=false;st.scenarioOpen=false;render()});
+    photoInput.addEventListener("change",()=>{const f=photoInput.files&&photoInput.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{st.photo=String(r.result||"");st.photoName=f.name;st.ok=true;st.error="";render()};r.readAsDataURL(f)});
+    render();
+  </script>
+  <script src="../_shared/feedback-widget.js"></script>
+</body>
+</html>
