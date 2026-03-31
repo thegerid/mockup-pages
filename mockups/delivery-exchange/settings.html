@@ -181,6 +181,61 @@
         font-size: 12px;
         line-height: 1.25;
       }
+      .label-with-help {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .help-wrap {
+        position: relative;
+        display: inline-flex;
+      }
+      .help-btn {
+        width: 16px;
+        height: 16px;
+        border: 1px solid #8fa0b7;
+        border-radius: 50%;
+        background: #f7f9fd;
+        color: #5a6d86;
+        font: 700 10px/1 "Segoe UI", Arial, sans-serif;
+        display: grid;
+        place-items: center;
+        padding: 0;
+        cursor: help;
+      }
+      .help-tip {
+        position: absolute;
+        top: calc(100% + 6px);
+        left: 50%;
+        transform: translateX(-50%);
+        width: 290px;
+        background: #1b2636;
+        color: #fff;
+        border-radius: 8px;
+        padding: 8px 10px;
+        font-size: 11px;
+        line-height: 1.35;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity .14s ease;
+        z-index: 15;
+      }
+      .help-tip::before {
+        content: "";
+        position: absolute;
+        top: -6px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-left: 6px solid transparent;
+        border-right: 6px solid transparent;
+        border-bottom: 6px solid #1b2636;
+      }
+      .help-wrap:hover .help-tip,
+      .help-wrap:focus-within .help-tip {
+        opacity: 1;
+        visibility: visible;
+      }
       .caps {
         margin: 7px 0 5px;
         font-size: 12px;
@@ -390,8 +445,24 @@
                 <input class="mini time-trigger" data-time-trigger type="text" value="18:00" readonly />
               </div>
               <div class="row">
-                <label>SLA (до автоназначения, мин. Для ТО):</label>
+                <label class="label-with-help">
+                  <span>SLA (до автоназначения, мин. Для ТО):</span>
+                  <span class="help-wrap">
+                    <button class="help-btn" type="button" aria-label="Подсказка по SLA">?</button>
+                    <span class="help-tip">Вы указываете время до начала интервала заявки Т0, при достижении которого, заявка попадет в автораспред. Если указать величину 2 часа, то за 2 часа до интервала заявки, она будте снята с биржа и автоназначена на ближайшего доступного МБ.</span>
+                  </span>
+                </label>
                 <input class="mini" type="number" min="0" step="5" value="240" />
+              </div>
+              <div class="row">
+                <label class="label-with-help">
+                  <span>Расстояние для отображения подсказки (км).</span>
+                  <span class="help-wrap">
+                    <button class="help-btn" type="button" aria-label="Подсказка по расстоянию">?</button>
+                    <span class="help-tip">Вы указываете минимальное расстояние, при котором будет срабатывать отображение в окне основной встречи подсказки о том, что поблизости есть заявка с биржи.</span>
+                  </span>
+                </label>
+                <input class="mini" type="number" min="0" step="1" value="3" />
               </div>
               <p class="caps">МАКС. БРОНЕЙ НА МБ:</p>
               <div class="row">
@@ -444,8 +515,24 @@
                 <input class="mini time-trigger" data-time-trigger type="text" value="16:00" readonly />
               </div>
               <div class="row">
-                <label>SLA (до автоназначения, мин. Для ТО):</label>
+                <label class="label-with-help">
+                  <span>SLA (до автоназначения, мин. Для ТО):</span>
+                  <span class="help-wrap">
+                    <button class="help-btn" type="button" aria-label="Подсказка по SLA">?</button>
+                    <span class="help-tip">Вы указываете время до начала интервала заявки Т0, при достижении которого, заявка попадет в автораспред. Если указать величину 2 часа, то за 2 часа до интервала заявки, она будте снята с биржа и автоназначена на ближайшего доступного МБ.</span>
+                  </span>
+                </label>
                 <input class="mini" type="number" min="0" step="5" value="480" />
+              </div>
+              <div class="row">
+                <label class="label-with-help">
+                  <span>Расстояние для отображения подсказки (км).</span>
+                  <span class="help-wrap">
+                    <button class="help-btn" type="button" aria-label="Подсказка по расстоянию">?</button>
+                    <span class="help-tip">Вы указываете минимальное расстояние, при котором будет срабатывать отображение в окне основной встречи подсказки о том, что поблизости есть заявка с биржи.</span>
+                  </span>
+                </label>
+                <input class="mini" type="number" min="0" step="1" value="3" />
               </div>
               <p class="caps">МАКС. БРОНЕЙ НА МБ:</p>
               <div class="row">
