@@ -5,7 +5,7 @@
     city: "Москва",
     supplyBlock: "beeline",
     responsibleName: "Павлова Елена Игоревна",
-    responsiblePhone: "+7 (916) 555-24-10",
+    responsiblePhone: "+79876543210",
     deliveryType: "Постамат",
     deliveryBadgeLabel: "ЛЦ",
     deliveryAddress: "ул. 8 Марта, 14, ЛЦ Билайн",
