@@ -4,6 +4,7 @@
     region: "Москва",
     city: "Москва",
     supplyBlock: "beeline",
+    lcName: "ЛЦ Билайн",
     responsibleName: "Павлова Елена Игоревна",
     responsiblePhone: "+79876543210",
     deliveryType: "Постамат",
@@ -223,6 +224,8 @@ const state = {
   generated: false,
   selectedPinId: "",
   openFilter: "",
+  cityScope: "city",
+  citySearch: "",
   expandedRows: [],
   filters: {
     region: [],
@@ -251,18 +254,48 @@ function selectedRegionsWithoutAll() {
   return state.filters.region;
 }
 
+function citySourceRows() {
+  let source = getAllRows();
+  const selectedRegions = selectedRegionsWithoutAll();
+  if (selectedRegions.length) {
+    source = source.filter((row) => selectedRegions.includes(row.region));
+  }
+  return source;
+}
+
+function cityBaseOptions(scope = state.cityScope) {
+  const source = citySourceRows();
+  if (scope === "lc") {
+    const labels = unique(
+      source
+        .filter((row) => row.supplyBlock === "beeline")
+        .map((row) => row.lcName || "ЛЦ Билайн")
+    );
+    return labels.map((label) => ({ value: `lc:${label}`, label }));
+  }
+
+  const labels = unique(
+    source
+      .filter((row) => row.supplyBlock !== "beeline")
+      .map((row) => row.city)
+  );
+  return labels.map((label) => ({ value: `city:${label}`, label }));
+}
+
+function cityVisibleOptions() {
+  const search = state.citySearch.trim().toLowerCase();
+  const options = cityBaseOptions(state.cityScope);
+  if (!search) return options;
+  return options.filter((item) => item.label.toLowerCase().includes(search));
+}
+
 function getFilterOptions(filterId) {
   if (filterId === "region") {
     return REGION_OPTIONS.map((value) => ({ value, label: value }));
   }
 
   if (filterId === "city") {
-    let source = getAllRows();
-    const selectedRegions = selectedRegionsWithoutAll();
-    if (selectedRegions.length) {
-      source = source.filter((row) => selectedRegions.includes(row.region));
-    }
-    return unique(source.map((row) => row.city)).map((value) => ({ value, label: value }));
+    return cityBaseOptions(state.cityScope);
   }
 
   return STATIC_FILTER_OPTIONS[filterId] || [];
@@ -347,6 +380,94 @@ function renderFilterControls() {
       return;
     }
 
+    if (filterId === "city") {
+      const visibleOptions = cityVisibleOptions();
+      const baseCityOptions = cityBaseOptions(state.cityScope);
+      const allCityChecked =
+        baseCityOptions.length > 0 && baseCityOptions.every((item) => selectedSet.has(item.value));
+      const canReset = selectedSet.size > 0 || state.citySearch.length > 0;
+
+      dropdown.innerHTML = `
+        <div class="city-dropdown">
+          <div class="city-scope">
+            <button type="button" class="city-scope-btn ${state.cityScope === "city" ? "active" : ""}" data-city-scope="city">Города</button>
+            <button type="button" class="city-scope-btn ${state.cityScope === "lc" ? "active" : ""}" data-city-scope="lc">ЛЦ</button>
+          </div>
+          <div class="city-hint">Название или КЛАДР</div>
+          <label class="city-search">
+            <span class="city-search-icon">⌕</span>
+            <input type="text" data-city-search value="${state.citySearch.replace(/"/g, "&quot;")}" placeholder="Поиск">
+          </label>
+          <div class="city-options">
+            ${
+              visibleOptions.length
+                ? `
+                  <label class="filter-option">
+                    <input type="checkbox" data-filter-check="city" value="${ALL_CHECKBOX_VALUE}" ${allCityChecked ? "checked" : ""}>
+                    <span>Все</span>
+                  </label>
+                  ${visibleOptions
+                    .map((item) => {
+                      const checked = selectedSet.has(item.value);
+                      return `
+                        <label class="filter-option">
+                          <input type="checkbox" data-filter-check="city" value="${item.value}" ${checked ? "checked" : ""}>
+                          <span>${item.label}</span>
+                        </label>
+                      `;
+                    })
+                    .join("")}
+                `
+                : '<div class="city-empty">Ничего не нашлось</div>'
+            }
+          </div>
+          <button type="button" class="city-reset" data-city-reset ${canReset ? "" : "disabled"}>Сбросить</button>
+        </div>
+      `;
+
+      dropdown.querySelectorAll('[data-filter-check="city"]').forEach((checkbox) => {
+        checkbox.addEventListener("change", () => {
+          toggleFilterValue("city", checkbox.value, checkbox.checked);
+        });
+      });
+
+      dropdown.querySelectorAll("[data-city-scope]").forEach((scopeButton) => {
+        scopeButton.addEventListener("click", () => {
+          const scope = scopeButton.dataset.cityScope || "city";
+          if (scope === state.cityScope) return;
+          state.cityScope = scope;
+          state.citySearch = "";
+          state.filters.city = [];
+          resetGeneratedResult();
+          renderFilterControls();
+          renderCurrentState();
+        });
+      });
+
+      const searchInput = dropdown.querySelector("[data-city-search]");
+      if (searchInput) {
+        searchInput.addEventListener("input", () => {
+          state.citySearch = searchInput.value || "";
+          renderFilterControls();
+        });
+        if (open) {
+          requestAnimationFrame(() => searchInput.focus());
+        }
+      }
+
+      const resetButton = dropdown.querySelector("[data-city-reset]");
+      if (resetButton) {
+        resetButton.addEventListener("click", () => {
+          state.citySearch = "";
+          state.filters.city = [];
+          resetGeneratedResult();
+          renderFilterControls();
+          renderCurrentState();
+        });
+      }
+      return;
+    }
+
     dropdown.innerHTML = options.length
       ? options
           .map((item) => {
@@ -386,6 +507,7 @@ function toggleFilterValue(filterId, value, checked) {
 
   if (filterId === "region") {
     state.filters.city = [];
+    state.citySearch = "";
   }
 
   if (PRIMARY_FILTER_IDS.includes(filterId)) {
@@ -445,7 +567,19 @@ function matchDeliveryBand(daysToDelivery, band) {
 
 function rowMatchesFilters(row) {
   if (state.filters.region.length && !state.filters.region.includes(row.region)) return false;
-  if (state.filters.city.length && !state.filters.city.includes(row.city)) return false;
+  if (state.filters.city.length) {
+    const selectedCities = new Set();
+    const selectedLcs = new Set();
+    state.filters.city.forEach((value) => {
+      if (value.startsWith("city:")) selectedCities.add(value.slice(5));
+      if (value.startsWith("lc:")) selectedLcs.add(value.slice(3));
+    });
+
+    const rowLcName = row.lcName || "ЛЦ Билайн";
+    const cityMatch = selectedCities.has(row.city);
+    const lcMatch = row.supplyBlock === "beeline" && selectedLcs.has(rowLcName);
+    if (!cityMatch && !lcMatch) return false;
+  }
   if (state.filters.deliveryType.length && !state.filters.deliveryType.includes(row.deliveryType)) return false;
   if (state.filters.operationType.length && !state.filters.operationType.includes(row.operationType)) return false;
   if (

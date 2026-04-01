@@ -208,6 +208,103 @@
       flex: 0 0 auto;
     }
 
+    .city-dropdown {
+      padding: 10px 10px 8px;
+    }
+
+    .city-scope {
+      display: inline-flex;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .city-scope-btn {
+      height: 30px;
+      border: 0;
+      border-radius: 999px;
+      padding: 0 14px;
+      background: #d9dde5;
+      color: #2f3341;
+      font: 700 15px/1 "Segoe UI", Arial, sans-serif;
+      cursor: pointer;
+    }
+
+    .city-scope-btn.active {
+      background: #1f2129;
+      color: #fff;
+    }
+
+    .city-hint {
+      color: #666d7b;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .city-search {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      height: 42px;
+      border: 2px solid #a0a5b1;
+      border-radius: 9px;
+      background: #f4f5f8;
+      padding: 0 10px;
+      margin-bottom: 8px;
+    }
+
+    .city-search-icon {
+      color: #838a99;
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .city-search input {
+      width: 100%;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: #2a2f3b;
+      font: 500 16px/1.2 "Segoe UI", Arial, sans-serif;
+    }
+
+    .city-search input::placeholder {
+      color: #959caa;
+    }
+
+    .city-options {
+      max-height: 130px;
+      overflow: auto;
+      margin: 2px 0 10px;
+      padding-right: 2px;
+    }
+
+    .city-empty {
+      min-height: 56px;
+      display: grid;
+      place-items: center;
+      color: #9da3b0;
+      font-size: 18px;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .city-reset {
+      height: 30px;
+      border: 0;
+      border-radius: 9px;
+      padding: 0 18px;
+      background: #d9dde5;
+      color: #8d95a4;
+      font: 700 15px/1 "Segoe UI", Arial, sans-serif;
+      cursor: pointer;
+    }
+
+    .city-reset:disabled {
+      opacity: 0.8;
+      cursor: default;
+    }
+
     .filter-empty {
       padding: 10px;
       color: #7f8798;
@@ -802,7 +899,7 @@
           <div id="regionDropdown" class="filter-dropdown" data-filter-dropdown="region"></div>
         </div>
         <div class="field" data-filter="city">
-          <span class="field-label">Населенный пункт</span>
+          <span class="field-label">Город или ЛЦ</span>
           <button id="cityTrigger" class="filter-trigger" data-filter-trigger="city" type="button" aria-expanded="false">
             <span class="caption" data-filter-caption="city">Не выбрано</span>
             <span class="caret">▾</span>
