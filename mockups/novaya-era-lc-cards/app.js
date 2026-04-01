@@ -704,15 +704,6 @@ function transferToInWork(rowId) {
   toastMessage(`Заявка ${result.sourceIds[0]} передана в исполнение`);
 }
 
-function transferAllMobileNeeds(rows) {
-  const rowIds = (rows || []).map((row) => row.id);
-  const result = transferRowsToInWork(rowIds);
-  if (!result.moved) return;
-  renderFilterControls();
-  renderCurrentState();
-  toastMessage(`Передано в исполнение заявок: ${result.moved}`);
-}
-
 function renderEmptyPanel() {
   content.innerHTML = `
     <div class="state-panel">
@@ -907,23 +898,11 @@ function renderTable(rows) {
       <section class="table-section">
         <div class="table-section-head">
           <h3 class="table-section-title">Снабжение мобильных банкиров</h3>
-          ${
-            mobileRows.length
-              ? '<button type="button" class="transfer-btn section-action-btn" data-transfer-all-mobile>Передать все заявки</button>'
-              : ""
-          }
         </div>
         ${renderMobileNeedsTable(mobileRows)}
       </section>
     </div>
   `;
-
-  const transferAllButton = content.querySelector("[data-transfer-all-mobile]");
-  if (transferAllButton) {
-    transferAllButton.addEventListener("click", () => {
-      transferAllMobileNeeds(mobileRows);
-    });
-  }
 
   content.querySelectorAll(".table-wrap").forEach((tableWrap) => {
     tableWrap.addEventListener("click", handleNeedsTableClick);
