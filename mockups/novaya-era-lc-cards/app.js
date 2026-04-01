@@ -668,32 +668,49 @@ function makeNextWorkId() {
   return `WK${workIdCounter}`;
 }
 
-function transferToInWork(rowId) {
-  const index = needsRows.findIndex((row) => row.id === rowId);
-  if (index < 0) return;
+function transferRowsToInWork(rowIds) {
+  const idSet = new Set((rowIds || []).filter(Boolean));
+  if (!idSet.size) return { moved: 0 };
 
-  const source = needsRows[index];
-  needsRows.splice(index, 1);
+  const movedSourceRows = needsRows.filter((row) => idSet.has(row.id));
+  if (!movedSourceRows.length) return { moved: 0 };
 
-  const target = {
+  const keepRows = needsRows.filter((row) => !idSet.has(row.id));
+  needsRows.splice(0, needsRows.length, ...keepRows);
+
+  const movedRows = movedSourceRows.map((source) => ({
     ...source,
     id: makeNextWorkId(),
     banker: source.banker || "—",
     groupLead: source.groupLead || "—",
     stockDays: Math.min(7, Math.max(1, source.daysToDelivery || 7)),
     workStatus: "В работе",
-  };
+  }));
 
-  inWorkRows = [target, ...inWorkRows];
-  state.expandedRows = state.expandedRows.filter((id) => id !== rowId);
-
-  if (state.selectedPinId === rowId) {
+  inWorkRows = [...movedRows, ...inWorkRows];
+  state.expandedRows = state.expandedRows.filter((id) => !idSet.has(id));
+  if (state.selectedPinId && idSet.has(state.selectedPinId)) {
     state.selectedPinId = "";
   }
 
+  return { moved: movedRows.length, sourceIds: movedSourceRows.map((row) => row.id) };
+}
+
+function transferToInWork(rowId) {
+  const result = transferRowsToInWork([rowId]);
+  if (!result.moved) return;
   renderFilterControls();
   renderCurrentState();
-  toastMessage(`Заявка ${source.id} передана в исполнение`);
+  toastMessage(`Заявка ${result.sourceIds[0]} передана в исполнение`);
+}
+
+function transferAllMobileNeeds(rows) {
+  const rowIds = (rows || []).map((row) => row.id);
+  const result = transferRowsToInWork(rowIds);
+  if (!result.moved) return;
+  renderFilterControls();
+  renderCurrentState();
+  toastMessage(`Передано в исполнение заявок: ${result.moved}`);
 }
 
 function renderEmptyPanel() {
@@ -882,15 +899,31 @@ function renderTable(rows) {
   content.innerHTML = `
     <div class="table-sections">
       <section class="table-section">
-        <h3 class="table-section-title">Снабжение ЛЦ Билайн</h3>
+        <div class="table-section-head">
+          <h3 class="table-section-title">Снабжение ЛЦ Билайн</h3>
+        </div>
         ${renderBeelineTable(beelineRows)}
       </section>
       <section class="table-section">
-        <h3 class="table-section-title">Снабжение мобильных банкиров</h3>
+        <div class="table-section-head">
+          <h3 class="table-section-title">Снабжение мобильных банкиров</h3>
+          ${
+            mobileRows.length
+              ? '<button type="button" class="transfer-btn section-action-btn" data-transfer-all-mobile>Передать все заявки</button>'
+              : ""
+          }
+        </div>
         ${renderMobileNeedsTable(mobileRows)}
       </section>
     </div>
   `;
+
+  const transferAllButton = content.querySelector("[data-transfer-all-mobile]");
+  if (transferAllButton) {
+    transferAllButton.addEventListener("click", () => {
+      transferAllMobileNeeds(mobileRows);
+    });
+  }
 
   content.querySelectorAll(".table-wrap").forEach((tableWrap) => {
     tableWrap.addEventListener("click", handleNeedsTableClick);
@@ -1094,6 +1127,11 @@ function renderCurrentState() {
   tabButtons.forEach((button) => button.classList.toggle("active", button.dataset.tab === state.tab));
   const rows = state.tab === "inwork" ? filteredInWorkRows() : filteredRows();
 
+  if (state.tab === "table") {
+    renderTable(rows);
+    return;
+  }
+
   if (!rows.length) {
     renderEmptyPanel();
     return;
@@ -1101,10 +1139,8 @@ function renderCurrentState() {
 
   if (state.tab === "map") {
     renderMap(rows);
-  } else if (state.tab === "inwork") {
-    renderInWork(rows);
   } else {
-    renderTable(rows);
+    renderInWork(rows);
   }
 }
 
