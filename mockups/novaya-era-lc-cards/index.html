@@ -389,11 +389,11 @@
       color: #747988;
       font: 700 20px/1 "Segoe UI", Arial, sans-serif;
       cursor: pointer;
-      border-bottom: 3px solid transparent;
+      border-bottom: 2px solid transparent;
     }
 
     .tab-btn.active {
-      color: var(--accent);
+      color: #1f2129;
       border-bottom-color: var(--accent);
     }
 
@@ -564,6 +564,48 @@
     .cell-content {
       display: inline-grid;
       gap: 3px;
+    }
+
+    .status-cell {
+      max-width: 190px;
+      justify-items: start;
+    }
+
+    .status-cell .badge {
+      width: fit-content;
+      margin-bottom: 0;
+    }
+
+    .status-track {
+      display: grid;
+      gap: 2px;
+      max-width: 180px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.2;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .status-track-label {
+      color: #70798c;
+      font-weight: 600;
+    }
+
+    .status-track-value {
+      color: #4d5567;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      text-decoration-color: rgba(77, 85, 103, 0.55);
+    }
+
+    .status-track-value:hover {
+      color: #2f3a4f;
+      text-decoration-color: rgba(47, 58, 79, 0.8);
     }
 
     .request-link {
@@ -899,7 +941,7 @@
           <div id="regionDropdown" class="filter-dropdown" data-filter-dropdown="region"></div>
         </div>
         <div class="field" data-filter="city">
-          <span class="field-label">Город или ЛЦ</span>
+          <span class="field-label">Населенный пункт</span>
           <button id="cityTrigger" class="filter-trigger" data-filter-trigger="city" type="button" aria-expanded="false">
             <span class="caption" data-filter-caption="city">Не выбрано</span>
             <span class="caret">▾</span>
@@ -919,15 +961,6 @@
           <div class="filter-dropdown" data-filter-dropdown="deliveryBand"></div>
         </div>
 
-        <div class="field" data-filter="operationType">
-          <span class="sr-only">Тип операции</span>
-          <button class="filter-trigger" data-filter-trigger="operationType" type="button" aria-expanded="false">
-            <span class="caption" data-filter-caption="operationType">Тип операции</span>
-            <span class="caret">▾</span>
-          </button>
-          <div class="filter-dropdown" data-filter-dropdown="operationType"></div>
-        </div>
-
         <div class="field" data-filter="deliveryType">
           <span class="sr-only">Тип доставки</span>
           <button class="filter-trigger" data-filter-trigger="deliveryType" type="button" aria-expanded="false">
@@ -935,6 +968,15 @@
             <span class="caret">▾</span>
           </button>
           <div class="filter-dropdown" data-filter-dropdown="deliveryType"></div>
+        </div>
+
+        <div class="field" data-filter="deliveryStatus">
+          <span class="sr-only">Статус доставки</span>
+          <button class="filter-trigger" data-filter-trigger="deliveryStatus" type="button" aria-expanded="false">
+            <span class="caption" data-filter-caption="deliveryStatus">Статус доставки</span>
+            <span class="caret">▾</span>
+          </button>
+          <div class="filter-dropdown" data-filter-dropdown="deliveryStatus"></div>
         </div>
       </div>
     </section>

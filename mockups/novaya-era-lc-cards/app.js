@@ -167,7 +167,7 @@ let inWorkRows = [
     needQty: 36,
     daysToDelivery: 1,
     stockDays: 3,
-    workStatus: "Готово к получению",
+    workStatus: "Готов к получению",
     cardTypes: ["N9", "R7", "FAG"],
   },
   {
@@ -196,8 +196,8 @@ const FILTER_META = {
   region: { caption: "Не выбрано" },
   city: { caption: "Не выбрано" },
   deliveryBand: { caption: "Дни до доставки" },
-  operationType: { caption: "Тип операции" },
   deliveryType: { caption: "Тип доставки" },
+  deliveryStatus: { caption: "Статус доставки" },
 };
 
 const STATIC_FILTER_OPTIONS = {
@@ -206,33 +206,41 @@ const STATIC_FILTER_OPTIONS = {
     { value: "medium", label: "4-7 дн." },
     { value: "long", label: "8+ дн." },
   ],
-  operationType: [
-    { value: "new", label: "Новая выдача" },
-    { value: "reissue", label: "Перевыпуск" },
-  ],
   deliveryType: [
     { value: "Дом", label: "Дом" },
     { value: "Постамат", label: "Постамат" },
   ],
+  deliveryStatus: [
+    { value: "В работе", label: "В работе" },
+    { value: "Передано в доставку", label: "Передано в доставку" },
+    { value: "Доставляется", label: "Доставляется" },
+    { value: "Готов к получению", label: "Готов к получению" },
+    { value: "Доставлено", label: "Доставлено" },
+  ],
 };
 
 const FILTER_IDS = Object.keys(FILTER_META);
-const PRIMARY_FILTER_IDS = ["region", "city"];
 
 const state = {
   tab: "table",
   generated: false,
   selectedPinId: "",
   openFilter: "",
-  cityScope: "city",
   citySearch: "",
   expandedRows: [],
   filters: {
     region: [],
     city: [],
     deliveryBand: [],
-    operationType: [],
     deliveryType: [],
+    deliveryStatus: [],
+  },
+  appliedFilters: {
+    region: [],
+    city: [],
+    deliveryBand: [],
+    deliveryType: [],
+    deliveryStatus: [],
   },
 };
 
@@ -254,39 +262,10 @@ function selectedRegionsWithoutAll() {
   return state.filters.region;
 }
 
-function citySourceRows() {
-  let source = getAllRows();
-  const selectedRegions = selectedRegionsWithoutAll();
-  if (selectedRegions.length) {
-    source = source.filter((row) => selectedRegions.includes(row.region));
-  }
-  return source;
-}
-
-function cityBaseOptions(scope = state.cityScope) {
-  const source = citySourceRows();
-  if (scope === "lc") {
-    const labels = unique(
-      source
-        .filter((row) => row.supplyBlock === "beeline")
-        .map((row) => row.lcName || "ЛЦ Билайн")
-    );
-    return labels.map((label) => ({ value: `lc:${label}`, label }));
-  }
-
-  const labels = unique(
-    source
-      .filter((row) => row.supplyBlock !== "beeline")
-      .map((row) => row.city)
-  );
-  return labels.map((label) => ({ value: `city:${label}`, label }));
-}
-
-function cityVisibleOptions() {
+function getVisibleCityOptions(baseOptions) {
   const search = state.citySearch.trim().toLowerCase();
-  const options = cityBaseOptions(state.cityScope);
-  if (!search) return options;
-  return options.filter((item) => item.label.toLowerCase().includes(search));
+  if (!search) return baseOptions;
+  return baseOptions.filter((item) => item.label.toLowerCase().includes(search));
 }
 
 function getFilterOptions(filterId) {
@@ -295,7 +274,12 @@ function getFilterOptions(filterId) {
   }
 
   if (filterId === "city") {
-    return cityBaseOptions(state.cityScope);
+    let source = getAllRows();
+    const selectedRegions = selectedRegionsWithoutAll();
+    if (selectedRegions.length) {
+      source = source.filter((row) => selectedRegions.includes(row.region));
+    }
+    return unique(source.map((row) => row.city)).map((value) => ({ value, label: value }));
   }
 
   return STATIC_FILTER_OPTIONS[filterId] || [];
@@ -311,16 +295,29 @@ function clearFilter(filterId) {
   state.filters[filterId] = [];
 }
 
+function cloneFilters(source) {
+  const copy = {};
+  FILTER_IDS.forEach((filterId) => {
+    copy[filterId] = [...(source[filterId] || [])];
+  });
+  return copy;
+}
+
 function normalizeFilterSelections() {
   FILTER_IDS.forEach((filterId) => {
     if (!isFilterEnabled(filterId)) {
-      clearFilter(filterId);
-      if (state.openFilter === filterId) state.openFilter = "";
+      if (!state.generated) {
+        clearFilter(filterId);
+        if (filterId === "city") state.citySearch = "";
+        if (state.openFilter === filterId) state.openFilter = "";
+      }
       return;
     }
 
-    const validValues = new Set(getFilterOptions(filterId).map((item) => item.value));
-    state.filters[filterId] = state.filters[filterId].filter((value) => validValues.has(value));
+    if (!state.generated) {
+      const validValues = new Set(getFilterOptions(filterId).map((item) => item.value));
+      state.filters[filterId] = state.filters[filterId].filter((value) => validValues.has(value));
+    }
   });
 }
 
@@ -339,12 +336,6 @@ function getFilterCaption(filterId) {
 
 function hasRequiredPrimaryFilters() {
   return state.filters.region.length > 0;
-}
-
-function resetGeneratedResult() {
-  state.generated = false;
-  state.selectedPinId = "";
-  state.expandedRows = [];
 }
 
 function syncGenerateState() {
@@ -381,37 +372,28 @@ function renderFilterControls() {
     }
 
     if (filterId === "city") {
-      const visibleOptions = cityVisibleOptions();
-      const baseCityOptions = cityBaseOptions(state.cityScope);
-      const allCityChecked =
-        baseCityOptions.length > 0 && baseCityOptions.every((item) => selectedSet.has(item.value));
-      const canReset = selectedSet.size > 0 || state.citySearch.length > 0;
+      const visibleCityOptions = getVisibleCityOptions(baseOptions);
 
       dropdown.innerHTML = `
         <div class="city-dropdown">
-          <div class="city-scope">
-            <button type="button" class="city-scope-btn ${state.cityScope === "city" ? "active" : ""}" data-city-scope="city">Города</button>
-            <button type="button" class="city-scope-btn ${state.cityScope === "lc" ? "active" : ""}" data-city-scope="lc">ЛЦ</button>
-          </div>
-          <div class="city-hint">Название или КЛАДР</div>
           <label class="city-search">
             <span class="city-search-icon">⌕</span>
             <input type="text" data-city-search value="${state.citySearch.replace(/"/g, "&quot;")}" placeholder="Поиск">
           </label>
           <div class="city-options">
             ${
-              visibleOptions.length
+              visibleCityOptions.length
                 ? `
                   <label class="filter-option">
-                    <input type="checkbox" data-filter-check="city" value="${ALL_CHECKBOX_VALUE}" ${allCityChecked ? "checked" : ""}>
+                    <input type="checkbox" data-filter-check="${filterId}" value="${ALL_CHECKBOX_VALUE}" ${allChecked ? "checked" : ""}>
                     <span>Все</span>
                   </label>
-                  ${visibleOptions
+                  ${visibleCityOptions
                     .map((item) => {
                       const checked = selectedSet.has(item.value);
                       return `
                         <label class="filter-option">
-                          <input type="checkbox" data-filter-check="city" value="${item.value}" ${checked ? "checked" : ""}>
+                          <input type="checkbox" data-filter-check="${filterId}" value="${item.value}" ${checked ? "checked" : ""}>
                           <span>${item.label}</span>
                         </label>
                       `;
@@ -421,50 +403,31 @@ function renderFilterControls() {
                 : '<div class="city-empty">Ничего не нашлось</div>'
             }
           </div>
-          <button type="button" class="city-reset" data-city-reset ${canReset ? "" : "disabled"}>Сбросить</button>
         </div>
       `;
 
-      dropdown.querySelectorAll('[data-filter-check="city"]').forEach((checkbox) => {
-        checkbox.addEventListener("change", () => {
-          toggleFilterValue("city", checkbox.value, checkbox.checked);
-        });
-      });
-
-      dropdown.querySelectorAll("[data-city-scope]").forEach((scopeButton) => {
-        scopeButton.addEventListener("click", () => {
-          const scope = scopeButton.dataset.cityScope || "city";
-          if (scope === state.cityScope) return;
-          state.cityScope = scope;
-          state.citySearch = "";
-          state.filters.city = [];
-          resetGeneratedResult();
-          renderFilterControls();
-          renderCurrentState();
-        });
-      });
-
       const searchInput = dropdown.querySelector("[data-city-search]");
       if (searchInput) {
+        searchInput.addEventListener("click", (event) => event.stopPropagation());
         searchInput.addEventListener("input", () => {
+          const cursorPos = searchInput.selectionStart ?? searchInput.value.length;
           state.citySearch = searchInput.value || "";
           renderFilterControls();
+          const nextInput = document.querySelector('[data-filter-dropdown="city"] [data-city-search]');
+          if (nextInput) {
+            const nextPos = Math.min(cursorPos, nextInput.value.length);
+            nextInput.focus();
+            nextInput.setSelectionRange(nextPos, nextPos);
+          }
         });
-        if (open) {
-          requestAnimationFrame(() => searchInput.focus());
-        }
       }
 
-      const resetButton = dropdown.querySelector("[data-city-reset]");
-      if (resetButton) {
-        resetButton.addEventListener("click", () => {
-          state.citySearch = "";
-          state.filters.city = [];
-          resetGeneratedResult();
-          renderFilterControls();
-          renderCurrentState();
+      dropdown.querySelectorAll(`[data-filter-check="${filterId}"]`).forEach((checkbox) => {
+        checkbox.addEventListener("click", (event) => event.stopPropagation());
+        checkbox.addEventListener("change", () => {
+          toggleFilterValue(filterId, checkbox.value, checkbox.checked);
         });
-      }
+      });
       return;
     }
 
@@ -504,14 +467,8 @@ function toggleFilterValue(filterId, value, checked) {
   }
 
   state.filters[filterId] = selected;
-
   if (filterId === "region") {
-    state.filters.city = [];
     state.citySearch = "";
-  }
-
-  if (PRIMARY_FILTER_IDS.includes(filterId)) {
-    resetGeneratedResult();
   }
 
   renderFilterControls();
@@ -554,8 +511,59 @@ function workStatusBadge(status) {
   if (status === "В работе") return '<span class="badge warn">В работе</span>';
   if (status === "Передано в доставку") return '<span class="badge info">Передано в доставку</span>';
   if (status === "Доставляется") return '<span class="badge neutral">Доставляется</span>';
-  if (status === "Готово к получению") return '<span class="badge info">Готово к получению</span>';
+  if (status === "Готов к получению") return '<span class="badge info">Готов к получению</span>';
   return '<span class="badge danger">Доставлено</span>';
+}
+
+function ensureDeliveryTrack(row) {
+  if (row.workStatus !== "Доставляется") return "";
+  if (row.deliveryTrack) return row.deliveryTrack;
+  const randomPart = Math.floor(100000000000 + Math.random() * 900000000000);
+  row.deliveryTrack = `TRK-${randomPart}`;
+  return row.deliveryTrack;
+}
+
+function renderWorkStatusCell(row, expanded) {
+  const track = ensureDeliveryTrack(row);
+  return `
+    <div class="cell-content status-cell">
+      ${workStatusBadge(row.workStatus)}
+      ${
+        expanded && track
+          ? `
+            <span class="status-track">
+              <span class="status-track-label">Трек-номер</span>
+              <span class="status-track-value" data-copy-track="${track}" title="Нажмите, чтобы скопировать">${track}</span>
+            </span>
+          `
+          : ""
+      }
+    </div>
+  `;
+}
+
+async function copyTrackNumber(track) {
+  if (!track) return false;
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(track);
+      return true;
+    }
+  } catch (error) {
+    // Fallback below for restricted clipboard permissions.
+  }
+
+  const tempInput = document.createElement("input");
+  tempInput.value = track;
+  tempInput.style.position = "fixed";
+  tempInput.style.opacity = "0";
+  tempInput.style.pointerEvents = "none";
+  document.body.appendChild(tempInput);
+  tempInput.focus();
+  tempInput.select();
+  const copied = document.execCommand("copy");
+  tempInput.remove();
+  return copied;
 }
 
 function matchDeliveryBand(daysToDelivery, band) {
@@ -565,26 +573,14 @@ function matchDeliveryBand(daysToDelivery, band) {
   return false;
 }
 
-function rowMatchesFilters(row) {
-  if (state.filters.region.length && !state.filters.region.includes(row.region)) return false;
-  if (state.filters.city.length) {
-    const selectedCities = new Set();
-    const selectedLcs = new Set();
-    state.filters.city.forEach((value) => {
-      if (value.startsWith("city:")) selectedCities.add(value.slice(5));
-      if (value.startsWith("lc:")) selectedLcs.add(value.slice(3));
-    });
-
-    const rowLcName = row.lcName || "ЛЦ Билайн";
-    const cityMatch = selectedCities.has(row.city);
-    const lcMatch = row.supplyBlock === "beeline" && selectedLcs.has(rowLcName);
-    if (!cityMatch && !lcMatch) return false;
-  }
-  if (state.filters.deliveryType.length && !state.filters.deliveryType.includes(row.deliveryType)) return false;
-  if (state.filters.operationType.length && !state.filters.operationType.includes(row.operationType)) return false;
+function rowMatchesFilters(row, filters) {
+  if (filters.region.length && !filters.region.includes(row.region)) return false;
+  if (filters.city.length && !filters.city.includes(row.city)) return false;
+  if (filters.deliveryType.length && !filters.deliveryType.includes(row.deliveryType)) return false;
+  if (filters.deliveryStatus.length && row.workStatus && !filters.deliveryStatus.includes(row.workStatus)) return false;
   if (
-    state.filters.deliveryBand.length &&
-    !state.filters.deliveryBand.some((band) => matchDeliveryBand(row.daysToDelivery, band))
+    filters.deliveryBand.length &&
+    !filters.deliveryBand.some((band) => matchDeliveryBand(row.daysToDelivery, band))
   ) {
     return false;
   }
@@ -593,12 +589,12 @@ function rowMatchesFilters(row) {
 
 function filteredRows() {
   if (!state.generated) return [];
-  return needsRows.filter((row) => rowMatchesFilters(row));
+  return needsRows.filter((row) => rowMatchesFilters(row, state.appliedFilters));
 }
 
 function filteredInWorkRows() {
   if (!state.generated) return [];
-  return inWorkRows.filter((row) => rowMatchesFilters(row));
+  return inWorkRows.filter((row) => rowMatchesFilters(row, state.appliedFilters));
 }
 
 function toastMessage(text) {
@@ -982,7 +978,7 @@ function renderInWorkBeelineTable(rows) {
                         <td data-toggle-cell="1"><div class="cell-content"><span class="request-link">${row.id}</span></div></td>
                         <td data-toggle-cell="1">${renderNeedCell(row, expanded)}</td>
                         <td data-toggle-cell="1">${renderStockCell(row)}</td>
-                        <td data-toggle-cell="1"><div class="cell-content">${workStatusBadge(row.workStatus)}</div></td>
+                        <td data-toggle-cell="1">${renderWorkStatusCell(row, expanded)}</td>
                         <td data-toggle-cell="1"><div class="cell-content">${row.daysToDelivery} дн.</div></td>
                       </tr>
                     `;
@@ -1033,7 +1029,7 @@ function renderInWorkMobileTable(rows) {
                         <td data-toggle-cell="1"><div class="cell-content"><span class="request-link">${row.id}</span></div></td>
                         <td data-toggle-cell="1">${renderNeedCell(row, expanded)}</td>
                         <td data-toggle-cell="1">${renderStockCell(row)}</td>
-                        <td data-toggle-cell="1"><div class="cell-content">${workStatusBadge(row.workStatus)}</div></td>
+                        <td data-toggle-cell="1">${renderWorkStatusCell(row, expanded)}</td>
                         <td data-toggle-cell="1"><div class="cell-content">${row.daysToDelivery} дн.</div></td>
                       </tr>
                     `;
@@ -1048,6 +1044,17 @@ function renderInWorkMobileTable(rows) {
 }
 
 function handleInWorkTableClick(event) {
+  const trackNode = event.target.closest("[data-copy-track]");
+  if (trackNode) {
+    event.preventDefault();
+    event.stopPropagation();
+    const track = trackNode.getAttribute("data-copy-track") || "";
+    copyTrackNumber(track).then((ok) => {
+      toastMessage(ok ? `Трек-номер скопирован: ${track}` : "Не удалось скопировать трек-номер");
+    });
+    return;
+  }
+
   if (event.target.closest(".request-link")) return;
   const selectedText = window.getSelection ? window.getSelection().toString().trim() : "";
   if (selectedText) return;
@@ -1108,6 +1115,14 @@ function bindEvents() {
       if (!filterId || !isFilterEnabled(filterId)) return;
       state.openFilter = state.openFilter === filterId ? "" : filterId;
       renderFilterControls();
+      if (state.openFilter === "city") {
+        const citySearchInput = document.querySelector('[data-filter-dropdown="city"] [data-city-search]');
+        if (citySearchInput) {
+          const pos = citySearchInput.value.length;
+          citySearchInput.focus();
+          citySearchInput.setSelectionRange(pos, pos);
+        }
+      }
     });
   });
 
@@ -1127,6 +1142,7 @@ function bindEvents() {
 
   generateBtn.addEventListener("click", () => {
     if (!hasRequiredPrimaryFilters()) return;
+    state.appliedFilters = cloneFilters(state.filters);
     state.generated = true;
     state.selectedPinId = "";
     state.expandedRows = [];
