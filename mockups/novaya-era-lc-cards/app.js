@@ -327,11 +327,16 @@ function cloneFilters(source) {
   return copy;
 }
 
-function ensureRandomOrder(rows) {
-  rows.forEach((row) => {
-    if (state.rowOrder[row.id] === undefined) {
-      state.rowOrder[row.id] = Math.random();
-    }
+function buildDefaultRowOrder() {
+  const ordered = [...needsRows, ...inWorkRows].sort((a, b) => {
+    const stockDiff = normalizedStockDays(a) - normalizedStockDays(b);
+    if (stockDiff !== 0) return stockDiff;
+    return a.id.localeCompare(b.id, "ru");
+  });
+
+  state.rowOrder = {};
+  ordered.forEach((row, index) => {
+    state.rowOrder[row.id] = index;
   });
 }
 
@@ -620,7 +625,7 @@ function getRequestStatus(row) {
 }
 
 function ensureDeliveryTrack(row) {
-  if (row.workStatus !== "Доставляется") return "";
+  if (row.workStatus !== "Доставляется" && row.workStatus !== "Готов к получению") return "";
   if (row.deliveryTrack) return row.deliveryTrack;
   const randomPart = Math.floor(100000000000 + Math.random() * 900000000000);
   row.deliveryTrack = `TRK-${randomPart}`;
@@ -705,8 +710,9 @@ function rowMatchesFilters(row, filters) {
 function filteredRows() {
   if (!state.generated) return [];
   const rows = [...needsRows, ...inWorkRows].filter((row) => rowMatchesFilters(row, state.appliedFilters));
-  ensureRandomOrder(rows);
-  return rows.sort((a, b) => (state.rowOrder[a.id] || 0) - (state.rowOrder[b.id] || 0));
+  return rows.sort(
+    (a, b) => (state.rowOrder[a.id] ?? Number.MAX_SAFE_INTEGER) - (state.rowOrder[b.id] ?? Number.MAX_SAFE_INTEGER)
+  );
 }
 
 function filteredInWorkRows() {
@@ -789,28 +795,15 @@ function transferRowsToInWork(rowIds) {
   const idSet = new Set((rowIds || []).filter(Boolean));
   if (!idSet.size) return { moved: 0 };
 
-  const movedSourceRows = needsRows.filter((row) => idSet.has(row.id));
-  if (!movedSourceRows.length) return { moved: 0 };
+  const targetRows = needsRows.filter((row) => idSet.has(row.id) && !row.workStatus);
+  if (!targetRows.length) return { moved: 0 };
 
-  const keepRows = needsRows.filter((row) => !idSet.has(row.id));
-  needsRows.splice(0, needsRows.length, ...keepRows);
+  targetRows.forEach((row) => {
+    row.workStatus = "В работе";
+    row.stockDays = Math.min(7, Math.max(1, row.daysToDelivery || 7));
+  });
 
-  const movedRows = movedSourceRows.map((source) => ({
-    ...source,
-    id: makeNextWorkId(),
-    banker: source.banker || "—",
-    groupLead: source.groupLead || "—",
-    stockDays: Math.min(7, Math.max(1, source.daysToDelivery || 7)),
-    workStatus: "В работе",
-  }));
-
-  inWorkRows = [...movedRows, ...inWorkRows];
-  state.expandedRows = state.expandedRows.filter((id) => !idSet.has(id));
-  if (state.selectedPinId && idSet.has(state.selectedPinId)) {
-    state.selectedPinId = "";
-  }
-
-  return { moved: movedRows.length, sourceIds: movedSourceRows.map((row) => row.id) };
+  return { moved: targetRows.length, sourceIds: targetRows.map((row) => row.id) };
 }
 
 function transferToInWork(rowId) {
@@ -877,9 +870,7 @@ function renderNoRowsLine(colspan) {
 }
 
 function renderActionCell(row) {
-  if (row.workStatus) {
-    return '<span class="action-badge">Заявка передана</span>';
-  }
+  if (row.workStatus) return renderWorkStatusCell(row, state.expandedRows.includes(row.id));
   return `<button type="button" class="transfer-btn" data-transfer-id="${row.id}">Передать в исполнение</button>`;
 }
 
@@ -895,9 +886,8 @@ function renderBeelineTable(rows) {
             <th>Заявка</th>
             <th>Потребность</th>
             <th>Остатки</th>
-            <th>Статус</th>
             <th class="col-delivery-term">Срок доставки</th>
-            <th>Действие</th>
+            <th>Статус</th>
           </tr>
         </thead>
         <tbody>
@@ -919,14 +909,13 @@ function renderBeelineTable(rows) {
                         <td data-toggle-cell="1"><div class="cell-content"><span class="request-link">${row.id}</span></div></td>
                         <td data-toggle-cell="1">${renderNeedCell(row, expanded)}</td>
                         <td data-toggle-cell="1">${renderStockCell(row)}</td>
-                        <td data-toggle-cell="1">${renderRequestStatusCell(row)}</td>
                         <td class="col-delivery-term" data-toggle-cell="1"><div class="cell-content">~${row.daysToDelivery} дн.</div></td>
                         <td>${renderActionCell(row)}</td>
                       </tr>
                     `;
                   })
                   .join("")
-              : renderNoRowsLine(9)
+              : renderNoRowsLine(8)
           }
         </tbody>
       </table>
@@ -947,9 +936,8 @@ function renderMobileNeedsTable(rows) {
             <th>Заявка</th>
             <th>Потребность</th>
             <th>Остатки</th>
-            <th>Статус</th>
             <th class="col-delivery-term">Срок доставки</th>
-            <th>Действие</th>
+            <th>Статус</th>
           </tr>
         </thead>
         <tbody>
@@ -972,14 +960,13 @@ function renderMobileNeedsTable(rows) {
                         <td data-toggle-cell="1"><div class="cell-content"><span class="request-link">${row.id}</span></div></td>
                         <td data-toggle-cell="1">${renderNeedCell(row, expanded)}</td>
                         <td data-toggle-cell="1">${renderStockCell(row)}</td>
-                        <td data-toggle-cell="1">${renderRequestStatusCell(row)}</td>
                         <td class="col-delivery-term" data-toggle-cell="1"><div class="cell-content">~${row.daysToDelivery} дн.</div></td>
                         <td>${renderActionCell(row)}</td>
                       </tr>
                     `;
                   })
                   .join("")
-              : renderNoRowsLine(10)
+              : renderNoRowsLine(9)
           }
         </tbody>
       </table>
@@ -988,6 +975,17 @@ function renderMobileNeedsTable(rows) {
 }
 
 function handleNeedsTableClick(event) {
+  const trackNode = event.target.closest("[data-copy-track]");
+  if (trackNode) {
+    event.preventDefault();
+    event.stopPropagation();
+    const track = trackNode.getAttribute("data-copy-track") || "";
+    copyTrackNumber(track).then((ok) => {
+      toastMessage(ok ? `Трек-номер скопирован: ${track}` : "Не удалось скопировать трек-номер");
+    });
+    return;
+  }
+
   const transferButton = event.target.closest(".transfer-btn");
   if (transferButton) {
     transferToInWork(transferButton.dataset.transferId || "");
@@ -1291,7 +1289,7 @@ function bindEvents() {
     if (!hasRequiredPrimaryFilters()) return;
     state.appliedFilters = cloneFilters(state.filters);
     state.generated = true;
-    state.rowOrder = {};
+    buildDefaultRowOrder();
     state.selectedPinId = "";
     state.expandedRows = [];
     renderCurrentState();
