@@ -552,6 +552,13 @@
       background: rgba(244, 245, 247, 0.65);
     }
 
+    th.col-delivery-term,
+    td.col-delivery-term {
+      width: 130px;
+      min-width: 130px;
+      white-space: nowrap;
+    }
+
     tr:hover td { background: #f4f5f8; }
     tr:last-child td { border-bottom: 0; }
 
@@ -593,6 +600,8 @@
     .badge.warn { background: #ffe5cb; color: #d97916; }
     .badge.danger { background: #ffd4d4; color: #dc3a3a; }
     .badge.info { background: #dce8ff; color: #2f72db; }
+    .badge.success { background: #dff4e3; color: #1f8a3f; }
+    .badge.formed { background: #e6e8ee; color: #4f5768; }
 
     .cell-content {
       display: inline-grid;
@@ -667,6 +676,20 @@
 
     .transfer-btn:hover { filter: brightness(0.98); }
     .transfer-btn:active { transform: translateY(1px); }
+
+    .action-badge {
+      height: 30px;
+      border-radius: 8px;
+      width: 176px;
+      padding: 0 12px;
+      background: #dde2ea;
+      color: #4f5768;
+      font: 700 12px/1 "Segoe UI", Arial, sans-serif;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+    }
 
     .address-cell {
       display: inline-grid;
@@ -1019,9 +1042,9 @@
         </div>
 
         <div class="field" data-filter="deliveryStatus">
-          <span class="sr-only">Статус доставки</span>
+          <span class="sr-only">Статус заявки</span>
           <button class="filter-trigger" data-filter-trigger="deliveryStatus" type="button" aria-expanded="false">
-            <span class="caption" data-filter-caption="deliveryStatus">Статус доставки</span>
+            <span class="caption" data-filter-caption="deliveryStatus">Статус заявки</span>
             <span class="caret">▾</span>
           </button>
           <div class="filter-dropdown" data-filter-dropdown="deliveryStatus"></div>
@@ -1030,9 +1053,8 @@
     </section>
 
     <nav class="tabs" aria-label="Вкладки отображения">
-      <button class="tab-btn active" data-tab="table" type="button">Список потребностей</button>
+      <button class="tab-btn active" data-tab="table" type="button">Журнал заявок</button>
       <button class="tab-btn" data-tab="map" type="button">Карта потребностей</button>
-      <button class="tab-btn" data-tab="inwork" type="button">Заявки в работе</button>
     </nav>
 
     <section class="content" id="content"></section>

@@ -191,6 +191,7 @@ let workIdCounter = 3009152000;
 
 const REGION_OPTIONS = ["Дальневосточный", "Москва", "Северо-запад"];
 const ALL_CHECKBOX_VALUE = "__all__";
+const FORMED_STATUS = "Сформирована";
 
 const FILTER_META = {
   region: { caption: "Не выбрано" },
@@ -198,7 +199,7 @@ const FILTER_META = {
   deliveryBand: { caption: "Дни до доставки" },
   deliveryType: { caption: "Тип доставки" },
   groupLead: { caption: "Начальник группы" },
-  deliveryStatus: { caption: "Статус доставки" },
+  deliveryStatus: { caption: "Статус заявки" },
 };
 
 const STATIC_FILTER_OPTIONS = {
@@ -212,6 +213,7 @@ const STATIC_FILTER_OPTIONS = {
     { value: "Постамат", label: "Постамат" },
   ],
   deliveryStatus: [
+    { value: FORMED_STATUS, label: FORMED_STATUS },
     { value: "В работе", label: "В работе" },
     { value: "Передано в доставку", label: "Передано в доставку" },
     { value: "Доставляется", label: "Доставляется" },
@@ -229,6 +231,7 @@ const state = {
   openFilter: "",
   citySearch: "",
   groupLeadSearch: "",
+  rowOrder: {},
   expandedRows: [],
   filters: {
     region: [],
@@ -324,6 +327,14 @@ function cloneFilters(source) {
   return copy;
 }
 
+function ensureRandomOrder(rows) {
+  rows.forEach((row) => {
+    if (state.rowOrder[row.id] === undefined) {
+      state.rowOrder[row.id] = Math.random();
+    }
+  });
+}
+
 function normalizeFilterSelections() {
   FILTER_IDS.forEach((filterId) => {
     if (!isFilterEnabled(filterId)) {
@@ -378,7 +389,14 @@ function renderFilterControls() {
     const enabled = isFilterEnabled(filterId);
     const open = enabled && state.openFilter === filterId;
     const baseOptions = getFilterOptions(filterId);
-    const options = baseOptions.length ? [{ value: ALL_CHECKBOX_VALUE, label: "Все", isAll: true }, ...baseOptions] : [];
+    const options = baseOptions.length
+      ? filterId === "deliveryStatus" ||
+        filterId === "groupLead" ||
+        filterId === "deliveryType" ||
+        filterId === "deliveryBand"
+        ? baseOptions
+        : [{ value: ALL_CHECKBOX_VALUE, label: "Все", isAll: true }, ...baseOptions]
+      : [];
     const selectedSet = new Set(state.filters[filterId]);
     const allChecked = baseOptions.length > 0 && baseOptions.every((item) => selectedSet.has(item.value));
 
@@ -466,10 +484,6 @@ function renderFilterControls() {
             ${
               visibleGroupLeadOptions.length
                 ? `
-                  <label class="filter-option">
-                    <input type="checkbox" data-filter-check="${filterId}" value="${ALL_CHECKBOX_VALUE}" ${allChecked ? "checked" : ""}>
-                    <span>Все</span>
-                  </label>
                   ${visibleGroupLeadOptions
                     .map((item) => {
                       const checked = selectedSet.has(item.value);
@@ -552,6 +566,9 @@ function toggleFilterValue(filterId, value, checked) {
   if (filterId === "region") {
     state.citySearch = "";
   }
+  if (state.generated) {
+    state.appliedFilters = cloneFilters(state.filters);
+  }
 
   renderFilterControls();
   renderCurrentState();
@@ -590,11 +607,16 @@ function responsibleCell(row) {
 }
 
 function workStatusBadge(status) {
-  if (status === "В работе") return '<span class="badge warn">В работе</span>';
+  if (status === FORMED_STATUS) return `<span class="badge formed">${FORMED_STATUS}</span>`;
+  if (status === "В работе") return '<span class="badge danger">В работе</span>';
   if (status === "Передано в доставку") return '<span class="badge info">Передано в доставку</span>';
   if (status === "Доставляется") return '<span class="badge neutral">Доставляется</span>';
-  if (status === "Готов к получению") return '<span class="badge info">Готов к получению</span>';
-  return '<span class="badge danger">Доставлено</span>';
+  if (status === "Готов к получению") return '<span class="badge warn">Готов к получению</span>';
+  return '<span class="badge success">Доставлено</span>';
+}
+
+function getRequestStatus(row) {
+  return row.workStatus || FORMED_STATUS;
 }
 
 function ensureDeliveryTrack(row) {
@@ -607,9 +629,10 @@ function ensureDeliveryTrack(row) {
 
 function renderWorkStatusCell(row, expanded) {
   const track = ensureDeliveryTrack(row);
+  const status = getRequestStatus(row);
   return `
     <div class="cell-content status-cell">
-      ${workStatusBadge(row.workStatus)}
+      ${workStatusBadge(status)}
       ${
         expanded && track
           ? `
@@ -620,6 +643,14 @@ function renderWorkStatusCell(row, expanded) {
           `
           : ""
       }
+    </div>
+  `;
+}
+
+function renderRequestStatusCell(row) {
+  return `
+    <div class="cell-content status-cell">
+      ${workStatusBadge(getRequestStatus(row))}
     </div>
   `;
 }
@@ -661,7 +692,7 @@ function rowMatchesFilters(row, filters) {
   if (filters.deliveryType.length && !filters.deliveryType.includes(row.deliveryType)) return false;
   if (filters.groupLead.length && !row.groupLead) return false;
   if (filters.groupLead.length && !filters.groupLead.includes(row.groupLead)) return false;
-  if (filters.deliveryStatus.length && row.workStatus && !filters.deliveryStatus.includes(row.workStatus)) return false;
+  if (filters.deliveryStatus.length && !filters.deliveryStatus.includes(getRequestStatus(row))) return false;
   if (
     filters.deliveryBand.length &&
     !filters.deliveryBand.some((band) => matchDeliveryBand(row.daysToDelivery, band))
@@ -673,7 +704,9 @@ function rowMatchesFilters(row, filters) {
 
 function filteredRows() {
   if (!state.generated) return [];
-  return needsRows.filter((row) => rowMatchesFilters(row, state.appliedFilters));
+  const rows = [...needsRows, ...inWorkRows].filter((row) => rowMatchesFilters(row, state.appliedFilters));
+  ensureRandomOrder(rows);
+  return rows.sort((a, b) => (state.rowOrder[a.id] || 0) - (state.rowOrder[b.id] || 0));
 }
 
 function filteredInWorkRows() {
@@ -843,6 +876,13 @@ function renderNoRowsLine(colspan) {
   `;
 }
 
+function renderActionCell(row) {
+  if (row.workStatus) {
+    return '<span class="action-badge">Заявка передана</span>';
+  }
+  return `<button type="button" class="transfer-btn" data-transfer-id="${row.id}">Передать в исполнение</button>`;
+}
+
 function renderBeelineTable(rows) {
   return `
     <div class="table-wrap">
@@ -855,7 +895,8 @@ function renderBeelineTable(rows) {
             <th>Заявка</th>
             <th>Потребность</th>
             <th>Остатки</th>
-            <th>Ожидаемый срок доставки</th>
+            <th>Статус</th>
+            <th class="col-delivery-term">Срок доставки</th>
             <th>Действие</th>
           </tr>
         </thead>
@@ -878,15 +919,14 @@ function renderBeelineTable(rows) {
                         <td data-toggle-cell="1"><div class="cell-content"><span class="request-link">${row.id}</span></div></td>
                         <td data-toggle-cell="1">${renderNeedCell(row, expanded)}</td>
                         <td data-toggle-cell="1">${renderStockCell(row)}</td>
-                        <td data-toggle-cell="1"><div class="cell-content">${row.daysToDelivery} дн.</div></td>
-                        <td>
-                          <button type="button" class="transfer-btn" data-transfer-id="${row.id}">Передать в исполнение</button>
-                        </td>
+                        <td data-toggle-cell="1">${renderRequestStatusCell(row)}</td>
+                        <td class="col-delivery-term" data-toggle-cell="1"><div class="cell-content">~${row.daysToDelivery} дн.</div></td>
+                        <td>${renderActionCell(row)}</td>
                       </tr>
                     `;
                   })
                   .join("")
-              : renderNoRowsLine(8)
+              : renderNoRowsLine(9)
           }
         </tbody>
       </table>
@@ -907,7 +947,8 @@ function renderMobileNeedsTable(rows) {
             <th>Заявка</th>
             <th>Потребность</th>
             <th>Остатки</th>
-            <th>Ожидаемый срок доставки</th>
+            <th>Статус</th>
+            <th class="col-delivery-term">Срок доставки</th>
             <th>Действие</th>
           </tr>
         </thead>
@@ -931,15 +972,14 @@ function renderMobileNeedsTable(rows) {
                         <td data-toggle-cell="1"><div class="cell-content"><span class="request-link">${row.id}</span></div></td>
                         <td data-toggle-cell="1">${renderNeedCell(row, expanded)}</td>
                         <td data-toggle-cell="1">${renderStockCell(row)}</td>
-                        <td data-toggle-cell="1"><div class="cell-content">${row.daysToDelivery} дн.</div></td>
-                        <td>
-                          <button type="button" class="transfer-btn" data-transfer-id="${row.id}">Передать в исполнение</button>
-                        </td>
+                        <td data-toggle-cell="1">${renderRequestStatusCell(row)}</td>
+                        <td class="col-delivery-term" data-toggle-cell="1"><div class="cell-content">~${row.daysToDelivery} дн.</div></td>
+                        <td>${renderActionCell(row)}</td>
                       </tr>
                     `;
                   })
                   .join("")
-              : renderNoRowsLine(9)
+              : renderNoRowsLine(10)
           }
         </tbody>
       </table>
@@ -1052,7 +1092,7 @@ function renderInWorkBeelineTable(rows) {
             <th>Потребность</th>
             <th>Остатки</th>
             <th>Статус</th>
-            <th>Ожидаемый срок доставки</th>
+            <th class="col-delivery-term">Срок доставки</th>
           </tr>
         </thead>
         <tbody>
@@ -1075,7 +1115,7 @@ function renderInWorkBeelineTable(rows) {
                         <td data-toggle-cell="1">${renderNeedCell(row, expanded)}</td>
                         <td data-toggle-cell="1">${renderStockCell(row)}</td>
                         <td data-toggle-cell="1">${renderWorkStatusCell(row, expanded)}</td>
-                        <td data-toggle-cell="1"><div class="cell-content">${row.daysToDelivery} дн.</div></td>
+                        <td class="col-delivery-term" data-toggle-cell="1"><div class="cell-content">~${row.daysToDelivery} дн.</div></td>
                       </tr>
                     `;
                   })
@@ -1102,7 +1142,7 @@ function renderInWorkMobileTable(rows) {
             <th>Потребность</th>
             <th>Остатки</th>
             <th>Статус</th>
-            <th>Ожидаемый срок доставки</th>
+            <th class="col-delivery-term">Срок доставки</th>
           </tr>
         </thead>
         <tbody>
@@ -1126,7 +1166,7 @@ function renderInWorkMobileTable(rows) {
                         <td data-toggle-cell="1">${renderNeedCell(row, expanded)}</td>
                         <td data-toggle-cell="1">${renderStockCell(row)}</td>
                         <td data-toggle-cell="1">${renderWorkStatusCell(row, expanded)}</td>
-                        <td data-toggle-cell="1"><div class="cell-content">${row.daysToDelivery} дн.</div></td>
+                        <td class="col-delivery-term" data-toggle-cell="1"><div class="cell-content">~${row.daysToDelivery} дн.</div></td>
                       </tr>
                     `;
                   })
@@ -1251,11 +1291,12 @@ function bindEvents() {
     if (!hasRequiredPrimaryFilters()) return;
     state.appliedFilters = cloneFilters(state.filters);
     state.generated = true;
+    state.rowOrder = {};
     state.selectedPinId = "";
     state.expandedRows = [];
     renderCurrentState();
     const rowsCount = filteredRows().length;
-    toastMessage(rowsCount ? `Список потребностей сформирован: ${rowsCount} записей` : "Данные по фильтру не найдены");
+    toastMessage(rowsCount ? `Журнал заявок сформирован: ${rowsCount} записей` : "Данные по фильтру не найдены");
   });
 
   tabButtons.forEach((button) => {
