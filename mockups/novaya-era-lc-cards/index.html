@@ -101,19 +101,6 @@
       gap: 10px;
     }
 
-    .filter-group {
-      display: grid;
-      gap: 6px;
-    }
-
-    .filter-group-title {
-      color: #667086;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-
     .primary-filters {
       display: grid;
       grid-template-columns: minmax(180px, 240px) minmax(180px, 240px) auto;
@@ -336,7 +323,7 @@
     }
 
     .generate-btn {
-      height: 34px;
+      height: 42px;
       border: 0;
       border-radius: var(--radius-m);
       padding: 0 10px;
@@ -366,6 +353,24 @@
 
     .secondary-filters .field {
       min-width: 138px;
+    }
+
+    .secondary-filters .field[data-filter="groupLead"] {
+      min-width: 240px;
+      width: min(270px, 100%);
+    }
+
+    .secondary-filters .field[data-filter="groupLead"] .filter-trigger {
+      min-width: 0;
+    }
+
+    .secondary-filters .field[data-filter="deliveryStatus"] {
+      min-width: 200px;
+      width: min(220px, 100%);
+    }
+
+    .secondary-filters .field[data-filter="deliveryStatus"] .filter-trigger {
+      min-width: 0;
     }
 
     .secondary-filters .filter-trigger {
@@ -949,6 +954,8 @@
       .tab-btn { font-size: 16px; }
       .state-panel { min-height: 380px; }
       .empty-text { font-size: 13px; }
+      .secondary-filters .field[data-filter="groupLead"] { min-width: 138px; width: 100%; }
+      .secondary-filters .field[data-filter="deliveryStatus"] { min-width: 138px; width: 100%; }
     }
   </style>
 </head>
@@ -962,59 +969,62 @@
       </div>
     </header>
 
-    <section class="filter-panel" aria-label="Панель поиска и фильтров">
-      <div class="filter-group" aria-label="Настройки поиска">
-        <div class="filter-group-title">Настройки поиска</div>
-        <div class="primary-filters">
-          <div class="field" data-filter="region">
-            <span class="field-label">Регион</span>
-            <button id="regionTrigger" class="filter-trigger" data-filter-trigger="region" type="button" aria-expanded="false">
-              <span class="caption" data-filter-caption="region">Не выбрано</span>
-              <span class="caret">▾</span>
-            </button>
-            <div id="regionDropdown" class="filter-dropdown" data-filter-dropdown="region"></div>
-          </div>
-          <div class="field" data-filter="city">
-            <span class="field-label">Населенный пункт</span>
-            <button id="cityTrigger" class="filter-trigger" data-filter-trigger="city" type="button" aria-expanded="false">
-              <span class="caption" data-filter-caption="city">Не выбрано</span>
-              <span class="caret">▾</span>
-            </button>
-            <div id="cityDropdown" class="filter-dropdown" data-filter-dropdown="city"></div>
-          </div>
-          <button id="generateBtn" class="generate-btn" type="button">Сформировать потребности</button>
+    <section class="filter-panel" aria-label="Фильтры">
+      <div class="primary-filters">
+        <div class="field" data-filter="region">
+          <span class="field-label">Регион</span>
+          <button id="regionTrigger" class="filter-trigger" data-filter-trigger="region" type="button" aria-expanded="false">
+            <span class="caption" data-filter-caption="region">Не выбрано</span>
+            <span class="caret">▾</span>
+          </button>
+          <div id="regionDropdown" class="filter-dropdown" data-filter-dropdown="region"></div>
         </div>
+        <div class="field" data-filter="city">
+          <span class="field-label">Населенный пункт</span>
+          <button id="cityTrigger" class="filter-trigger" data-filter-trigger="city" type="button" aria-expanded="false">
+            <span class="caption" data-filter-caption="city">Не выбрано</span>
+            <span class="caret">▾</span>
+          </button>
+          <div id="cityDropdown" class="filter-dropdown" data-filter-dropdown="city"></div>
+        </div>
+        <button id="generateBtn" class="generate-btn" type="button">Сформировать потребности</button>
       </div>
 
-      <div class="filter-group" aria-label="Фильтры">
-        <div class="filter-group-title">Фильтры</div>
-        <div class="secondary-filters">
-          <div class="field" data-filter="deliveryBand">
-            <span class="sr-only">Дни до доставки</span>
-            <button class="filter-trigger" data-filter-trigger="deliveryBand" type="button" aria-expanded="false">
-              <span class="caption" data-filter-caption="deliveryBand">Дни до доставки</span>
-              <span class="caret">▾</span>
-            </button>
-            <div class="filter-dropdown" data-filter-dropdown="deliveryBand"></div>
-          </div>
+      <div class="secondary-filters">
+        <div class="field" data-filter="deliveryBand">
+          <span class="sr-only">Дни до доставки</span>
+          <button class="filter-trigger" data-filter-trigger="deliveryBand" type="button" aria-expanded="false">
+            <span class="caption" data-filter-caption="deliveryBand">Дни до доставки</span>
+            <span class="caret">▾</span>
+          </button>
+          <div class="filter-dropdown" data-filter-dropdown="deliveryBand"></div>
+        </div>
 
-          <div class="field" data-filter="deliveryType">
-            <span class="sr-only">Тип доставки</span>
-            <button class="filter-trigger" data-filter-trigger="deliveryType" type="button" aria-expanded="false">
-              <span class="caption" data-filter-caption="deliveryType">Тип доставки</span>
-              <span class="caret">▾</span>
-            </button>
-            <div class="filter-dropdown" data-filter-dropdown="deliveryType"></div>
-          </div>
+        <div class="field" data-filter="deliveryType">
+          <span class="sr-only">Тип доставки</span>
+          <button class="filter-trigger" data-filter-trigger="deliveryType" type="button" aria-expanded="false">
+            <span class="caption" data-filter-caption="deliveryType">Тип доставки</span>
+            <span class="caret">▾</span>
+          </button>
+          <div class="filter-dropdown" data-filter-dropdown="deliveryType"></div>
+        </div>
 
-          <div class="field" data-filter="deliveryStatus">
-            <span class="sr-only">Статус доставки</span>
-            <button class="filter-trigger" data-filter-trigger="deliveryStatus" type="button" aria-expanded="false">
-              <span class="caption" data-filter-caption="deliveryStatus">Статус доставки</span>
-              <span class="caret">▾</span>
-            </button>
-            <div class="filter-dropdown" data-filter-dropdown="deliveryStatus"></div>
-          </div>
+        <div class="field" data-filter="groupLead">
+          <span class="sr-only">Начальник группы</span>
+          <button class="filter-trigger" data-filter-trigger="groupLead" type="button" aria-expanded="false">
+            <span class="caption" data-filter-caption="groupLead">Начальник группы</span>
+            <span class="caret">▾</span>
+          </button>
+          <div class="filter-dropdown" data-filter-dropdown="groupLead"></div>
+        </div>
+
+        <div class="field" data-filter="deliveryStatus">
+          <span class="sr-only">Статус доставки</span>
+          <button class="filter-trigger" data-filter-trigger="deliveryStatus" type="button" aria-expanded="false">
+            <span class="caption" data-filter-caption="deliveryStatus">Статус доставки</span>
+            <span class="caret">▾</span>
+          </button>
+          <div class="filter-dropdown" data-filter-dropdown="deliveryStatus"></div>
         </div>
       </div>
     </section>

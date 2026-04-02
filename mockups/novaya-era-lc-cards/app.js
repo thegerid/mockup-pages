@@ -197,6 +197,7 @@ const FILTER_META = {
   city: { caption: "Не выбрано" },
   deliveryBand: { caption: "Дни до доставки" },
   deliveryType: { caption: "Тип доставки" },
+  groupLead: { caption: "Начальник группы" },
   deliveryStatus: { caption: "Статус доставки" },
 };
 
@@ -227,12 +228,14 @@ const state = {
   selectedPinId: "",
   openFilter: "",
   citySearch: "",
+  groupLeadSearch: "",
   expandedRows: [],
   filters: {
     region: [],
     city: [],
     deliveryBand: [],
     deliveryType: [],
+    groupLead: [],
     deliveryStatus: [],
   },
   appliedFilters: {
@@ -240,6 +243,7 @@ const state = {
     city: [],
     deliveryBand: [],
     deliveryType: [],
+    groupLead: [],
     deliveryStatus: [],
   },
 };
@@ -268,6 +272,12 @@ function getVisibleCityOptions(baseOptions) {
   return baseOptions.filter((item) => item.label.toLowerCase().includes(search));
 }
 
+function getVisibleGroupLeadOptions(baseOptions) {
+  const search = state.groupLeadSearch.trim().toLowerCase();
+  if (!search) return baseOptions;
+  return baseOptions.filter((item) => item.label.toLowerCase().includes(search));
+}
+
 function getFilterOptions(filterId) {
   if (filterId === "region") {
     return REGION_OPTIONS.map((value) => ({ value, label: value }));
@@ -280,6 +290,15 @@ function getFilterOptions(filterId) {
       source = source.filter((row) => selectedRegions.includes(row.region));
     }
     return unique(source.map((row) => row.city)).map((value) => ({ value, label: value }));
+  }
+
+  if (filterId === "groupLead") {
+    let source = getAllRows();
+    const selectedRegions = selectedRegionsWithoutAll();
+    if (selectedRegions.length) {
+      source = source.filter((row) => selectedRegions.includes(row.region));
+    }
+    return unique(source.map((row) => row.groupLead).filter(Boolean)).map((value) => ({ value, label: value }));
   }
 
   return STATIC_FILTER_OPTIONS[filterId] || [];
@@ -311,6 +330,7 @@ function normalizeFilterSelections() {
       if (!state.generated) {
         clearFilter(filterId);
         if (filterId === "city") state.citySearch = "";
+        if (filterId === "groupLead") state.groupLeadSearch = "";
         if (state.openFilter === filterId) state.openFilter = "";
       }
       return;
@@ -416,6 +436,66 @@ function renderFilterControls() {
           state.citySearch = searchInput.value || "";
           renderFilterControls();
           const nextInput = document.querySelector('[data-filter-dropdown="city"] [data-city-search]');
+          if (nextInput) {
+            const nextPos = Math.min(cursorPos, nextInput.value.length);
+            nextInput.focus();
+            nextInput.setSelectionRange(nextPos, nextPos);
+          }
+        });
+      }
+
+      dropdown.querySelectorAll(`[data-filter-check="${filterId}"]`).forEach((checkbox) => {
+        checkbox.addEventListener("click", (event) => event.stopPropagation());
+        checkbox.addEventListener("change", () => {
+          toggleFilterValue(filterId, checkbox.value, checkbox.checked);
+        });
+      });
+      return;
+    }
+
+    if (filterId === "groupLead") {
+      const visibleGroupLeadOptions = getVisibleGroupLeadOptions(baseOptions);
+
+      dropdown.innerHTML = `
+        <div class="city-dropdown">
+          <label class="city-search">
+            <span class="city-search-icon">⌕</span>
+            <input type="text" data-group-lead-search value="${state.groupLeadSearch.replace(/"/g, "&quot;")}" placeholder="Поиск">
+          </label>
+          <div class="city-options">
+            ${
+              visibleGroupLeadOptions.length
+                ? `
+                  <label class="filter-option">
+                    <input type="checkbox" data-filter-check="${filterId}" value="${ALL_CHECKBOX_VALUE}" ${allChecked ? "checked" : ""}>
+                    <span>Все</span>
+                  </label>
+                  ${visibleGroupLeadOptions
+                    .map((item) => {
+                      const checked = selectedSet.has(item.value);
+                      return `
+                        <label class="filter-option">
+                          <input type="checkbox" data-filter-check="${filterId}" value="${item.value}" ${checked ? "checked" : ""}>
+                          <span>${item.label}</span>
+                        </label>
+                      `;
+                    })
+                    .join("")}
+                `
+                : '<div class="city-empty">Ничего не нашлось</div>'
+            }
+          </div>
+        </div>
+      `;
+
+      const searchInput = dropdown.querySelector("[data-group-lead-search]");
+      if (searchInput) {
+        searchInput.addEventListener("click", (event) => event.stopPropagation());
+        searchInput.addEventListener("input", () => {
+          const cursorPos = searchInput.selectionStart ?? searchInput.value.length;
+          state.groupLeadSearch = searchInput.value || "";
+          renderFilterControls();
+          const nextInput = document.querySelector('[data-filter-dropdown="groupLead"] [data-group-lead-search]');
           if (nextInput) {
             const nextPos = Math.min(cursorPos, nextInput.value.length);
             nextInput.focus();
@@ -579,6 +659,8 @@ function rowMatchesFilters(row, filters) {
   if (filters.region.length && !filters.region.includes(row.region)) return false;
   if (filters.city.length && !filters.city.includes(row.city)) return false;
   if (filters.deliveryType.length && !filters.deliveryType.includes(row.deliveryType)) return false;
+  if (filters.groupLead.length && !row.groupLead) return false;
+  if (filters.groupLead.length && !filters.groupLead.includes(row.groupLead)) return false;
   if (filters.deliveryStatus.length && row.workStatus && !filters.deliveryStatus.includes(row.workStatus)) return false;
   if (
     filters.deliveryBand.length &&
@@ -1138,6 +1220,14 @@ function bindEvents() {
           const pos = citySearchInput.value.length;
           citySearchInput.focus();
           citySearchInput.setSelectionRange(pos, pos);
+        }
+      }
+      if (state.openFilter === "groupLead") {
+        const groupLeadSearchInput = document.querySelector('[data-filter-dropdown="groupLead"] [data-group-lead-search]');
+        if (groupLeadSearchInput) {
+          const pos = groupLeadSearchInput.value.length;
+          groupLeadSearchInput.focus();
+          groupLeadSearchInput.setSelectionRange(pos, pos);
         }
       }
     });
