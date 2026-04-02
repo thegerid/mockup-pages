@@ -286,9 +286,11 @@ function getFilterOptions(filterId) {
 }
 
 function isFilterEnabled(filterId) {
-  if (filterId === "region") return true;
-  if (filterId === "city") return state.filters.region.length > 0;
-  return state.filters.region.length > 0;
+  if (!state.generated) {
+    return filterId === "region" || filterId === "city";
+  }
+
+  return true;
 }
 
 function clearFilter(filterId) {
@@ -335,7 +337,7 @@ function getFilterCaption(filterId) {
 }
 
 function hasRequiredPrimaryFilters() {
-  return state.filters.region.length > 0;
+  return state.filters.region.length > 0 || state.filters.city.length > 0;
 }
 
 function syncGenerateState() {
@@ -710,7 +712,7 @@ function renderEmptyPanel() {
       <div>
         <div class="empty-icon"></div>
         <h2 class="empty-title">Список пуст</h2>
-        <p class="empty-text">Нажмите кнопку «Сформировать список потребностей» выше, чтобы загрузить данные по региону.</p>
+        <p class="empty-text">Нажмите кнопку «Сформировать потребности» выше, чтобы загрузить данные по региону.</p>
       </div>
     </div>
   `;
