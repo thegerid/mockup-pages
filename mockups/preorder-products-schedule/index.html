@@ -1,0 +1,1698 @@
+﻿<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+  <title>График СВК</title>
+  <style>
+    :root {
+      --bg: #f1f2f4;
+      --panel: #ffffff;
+      --line: #d7dbe1;
+      --line-soft: #edf0f3;
+      --text: #1d2b3d;
+      --muted: #687383;
+      --dark: #1d1f22;
+      --accent: #d8292f;
+      --green: #5ac85a;
+      --danger: #e6454c;
+      --row: #eef0f2;
+      --row-alt: #ffffff;
+      --focus: 0 0 0 2px rgba(58, 118, 192, .18);
+    }
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background: var(--bg);
+      font: 15px/1.28 "Segoe UI", Arial, sans-serif;
+      letter-spacing: 0;
+    }
+    button, input, select { font: inherit; letter-spacing: 0; }
+    button { cursor: pointer; }
+    .app { min-width: 1180px; min-height: 100vh; background: #f4f5f7; }
+    .topbar {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 18px;
+      padding: 0 14px;
+      background: #f4f5f7;
+      border-bottom: 1px solid #e8ebef;
+    }
+    .sync {
+      width: 21px;
+      height: 21px;
+      border-radius: 50%;
+      border: 4px solid #11b25a;
+      border-left-color: transparent;
+      background: transparent;
+    }
+    .divider { width: 1px; height: 28px; background: #e1e5ea; }
+    .user-name { color: #11161d; font-weight: 700; white-space: nowrap; }
+    .top-icon {
+      width: 30px;
+      height: 30px;
+      border: 0;
+      background: transparent;
+      color: #737d8a;
+      display: grid;
+      place-items: center;
+      border-radius: 6px;
+    }
+    .top-icon:hover { background: #e8ebef; }
+    .workspace { padding: 0 14px 20px; }
+    .title {
+      margin: -19px 0 22px;
+      color: #000;
+      font-size: 44px;
+      line-height: 1;
+      font-weight: 500;
+    }
+    .main-tabs {
+      display: flex;
+      align-items: flex-end;
+      gap: 30px;
+      height: 38px;
+      border-bottom: 1px solid #b8bec7;
+    }
+    .main-tab {
+      position: relative;
+      height: 38px;
+      padding: 0;
+      border: 0;
+      color: #5c6675;
+      background: transparent;
+      font-size: 15px;
+    }
+    .main-tab.active { color: #243145; }
+    .main-tab.active::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -1px;
+      height: 2px;
+      background: var(--accent);
+    }
+    [hidden] { display: none !important; }
+    .subtabs { display: flex; gap: 8px; margin: 12px 0; }
+    .pill {
+      min-width: 134px;
+      height: 36px;
+      border: 0;
+      border-radius: 18px;
+      padding: 0 16px;
+      color: #2a3443;
+      background: #dfe3e8;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .pill.active { color: #fff; background: #1d1f22; }
+    .selector-row { display: flex; gap: 12px; margin-bottom: 10px; }
+    .selectlike,
+    .searchlike,
+    .filter-button {
+      height: 48px;
+      border: 0;
+      border-radius: 5px;
+      color: #465263;
+      background: #dfe3e8;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 12px;
+    }
+    .selectlike { min-width: 162px; justify-content: space-between; }
+    .searchlike { width: 226px; }
+    .searchlike input {
+      width: 100%;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: #263243;
+      min-width: 0;
+    }
+    .label-line { margin: 0 0 10px; color: #637082; font-size: 12px; }
+    .routes-view { margin-top: 12px; }
+    .routes-top-filters {
+      display: flex;
+      gap: 18px;
+      margin: 0 0 16px;
+    }
+    .routes-select {
+      width: 270px;
+      justify-content: space-between;
+    }
+    .routes-shell {
+      background: #fff;
+      border: 1px solid #e3e7ed;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .routes-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+    .routes-table th,
+    .routes-table td {
+      padding: 16px 14px;
+      text-align: left;
+      vertical-align: top;
+      border-bottom: 1px solid #e2e6ec;
+      color: #223045;
+    }
+    .routes-table thead th {
+      color: #112235;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      font-size: 12px;
+      font-weight: 700;
+      background: #fff;
+    }
+    .routes-table thead tr.routes-filters-row th {
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: 13px;
+      font-weight: 500;
+      padding-top: 10px;
+      padding-bottom: 6px;
+    }
+    .routes-table thead th + th { border-left: 1px solid #edf0f4; }
+    .routes-table tbody tr:last-child td { border-bottom: 0; }
+    .routes-control {
+      width: 100%;
+      height: 40px;
+      border: 0;
+      border-radius: 8px;
+      background: #dfe3e8;
+      color: #5d6878;
+      padding: 0 12px;
+      outline: 0;
+    }
+    .routes-select-control {
+      width: 100%;
+      height: 40px;
+      border: 0;
+      border-radius: 8px;
+      background: #dfe3e8;
+      color: #5d6878;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+    }
+    .routes-hint {
+      margin-top: 8px;
+      color: #627084;
+      font-size: 13px;
+      line-height: 1.35;
+      display: inline-block;
+    }
+    .routes-name {
+      color: #163252;
+      font-weight: 500;
+    }
+    .routes-products,
+    .routes-order {
+      line-height: 1.55;
+    }
+    .routes-schedule {
+      line-height: 1.5;
+      white-space: pre-line;
+    }
+    .routes-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      align-items: center;
+    }
+    .icon-btn {
+      width: 24px;
+      height: 24px;
+      border: 0;
+      border-radius: 4px;
+      background: transparent;
+      color: #1f252c;
+      display: grid;
+      place-items: center;
+    }
+    .icon-btn:hover { background: #edf0f4; }
+    .routes-empty {
+      text-align: center;
+      color: #687383;
+      padding: 18px 12px;
+    }
+    .grid-shell {
+      background: var(--panel);
+      border-radius: 3px;
+      border-top: 1px solid #eceff3;
+      overflow: hidden;
+    }
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      background: #fff;
+    }
+    .toolbar-actions {
+      height: 54px;
+      justify-content: flex-end;
+    }
+    .toolbar-main {
+      height: 54px;
+    }
+    .toolbar-nav {
+      height: 38px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      padding: 0 14px 8px;
+      background: #fff;
+    }
+    .toolbar-left,
+    .toolbar-right { display: flex; align-items: center; gap: 10px; }
+    .toolbar-left { min-width: 0; }
+    .small-filter { width: 154px; justify-content: space-between; font-size: 13px; }
+    .wide-filter { width: 164px; }
+    .btn {
+      height: 29px;
+      border: 0;
+      border-radius: 5px;
+      padding: 0 14px;
+      color: #2c394a;
+      background: #dfe3e8;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .btn:hover,
+    .filter-button:hover,
+    .selectlike:hover { background: #d8dde4; }
+    .square {
+      width: 31px;
+      height: 29px;
+      border: 0;
+      border-radius: 5px;
+      background: #dfe3e8;
+      color: #334054;
+      display: grid;
+      place-items: center;
+    }
+    .period { width: 137px; height: 42px; justify-content: space-between; }
+    .switch-wrap { display: flex; align-items: center; gap: 12px; color: #28364b; white-space: nowrap; }
+    .switch {
+      width: 32px;
+      height: 17px;
+      border: 0;
+      border-radius: 20px;
+      background: #858a94;
+      padding: 2px;
+      transition: background .16s;
+    }
+    .switch::before {
+      content: "";
+      display: block;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform .16s;
+    }
+    .switch.on { background: #2e74bd; }
+    .switch.on::before { transform: translateX(15px); }
+    .arrows { display: flex; gap: 10px; margin-left: 0; }
+    .round {
+      width: 29px;
+      height: 29px;
+      border: 0;
+      border-radius: 50%;
+      color: #20252b;
+      background: #eef0f3;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      line-height: 1;
+    }
+    .schedule {
+      display: grid;
+      grid-template-columns: 286px repeat(7, minmax(128px, 1fr));
+      width: 100%;
+    }
+    .corner,
+    .day-head {
+      min-height: 194px;
+      padding: 7px 16px 9px;
+      background: #fff;
+      border-right: 1px solid var(--line-soft);
+      border-bottom: 1px solid var(--line-soft);
+    }
+    .corner {
+      padding-top: 7px;
+      color: #253349;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      font-size: 12px;
+      line-height: 1;
+    }
+    .corner-label {
+      height: 31px;
+      display: flex;
+      align-items: flex-end;
+      white-space: nowrap;
+    }
+    .corner-label + .corner-label { border-top: 1px solid #e2e6ec; }
+    .corner-label.preorder { align-items: flex-end; }
+    .corner-date {
+      height: 25px;
+      display: flex;
+      align-items: flex-end;
+      color: #253349;
+      text-transform: uppercase;
+      border-top: 1px solid #e2e6ec;
+    }
+    .metric {
+      height: 31px;
+      display: flex;
+      align-items: flex-end;
+      font-size: 12px;
+      color: #0c1b2e;
+      text-decoration: none;
+    }
+    .metric + .metric { border-top: 1px solid #e2e6ec; }
+    .metric.preorder {
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .metric .sep {
+      padding: 0 3px;
+      color: #687383;
+      text-decoration: none;
+    }
+    .date-line {
+      height: 25px;
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      color: #a1a8b1;
+      font-size: 11px;
+      text-transform: uppercase;
+      border-top: 1px solid #e2e6ec;
+    }
+    .date-line strong { color: #253349; font-size: 12px; }
+    .date-line.weekend strong,
+    .date-line.weekend span { color: var(--danger); }
+    .employee {
+      min-height: 65px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 7px 14px 8px 16px;
+      background: var(--row);
+      border-right: 1px solid var(--line-soft);
+      border-bottom: 1px solid var(--line-soft);
+      color: #243247;
+      position: relative;
+    }
+    .employee.alt { background: var(--row-alt); }
+    .emp-name {
+      margin: 0 0 10px;
+      max-width: 266px;
+      overflow: hidden;
+      color: #233145;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .emp-meta {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: #4d5969;
+      font-size: 9px;
+      white-space: nowrap;
+    }
+    .emp-meta span { display: inline-flex; align-items: center; gap: 4px; }
+    .cell {
+      min-height: 65px;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line-soft);
+      background: var(--row);
+      display: grid;
+      place-items: center;
+      position: relative;
+    }
+    .cell.alt { background: var(--row-alt); }
+    .cell.selected::after {
+      content: "";
+      position: absolute;
+      inset: 7px;
+      border: 2px solid rgba(58, 118, 192, .4);
+      border-radius: 5px;
+      pointer-events: none;
+    }
+    .cell button {
+      border: 0;
+      background: transparent;
+      color: #1f252d;
+      font-weight: 600;
+      font-size: 21px;
+      line-height: 1;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+    }
+    .cell button:hover { background: rgba(255,255,255,.55); }
+    .clock {
+      width: 14px;
+      height: 14px;
+      border: 0;
+      border-radius: 50%;
+      background: var(--green);
+      position: relative;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.02);
+    }
+    .clock::before {
+      content: "";
+      position: absolute;
+      left: 6px;
+      top: 3px;
+      width: 2px;
+      height: 5px;
+      border-radius: 2px;
+      background: #fff;
+    }
+    .clock::after {
+      content: "";
+      position: absolute;
+      left: 6px;
+      top: 7px;
+      width: 5px;
+      height: 2px;
+      border-radius: 2px;
+      background: #fff;
+      transform: rotate(28deg);
+      transform-origin: left center;
+    }
+    .cell-info {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, 12px);
+      color: #637082;
+      font-size: 10px;
+      white-space: nowrap;
+    }
+    .row-check {
+      position: absolute;
+      left: 5px;
+      top: 9px;
+      display: none;
+      width: 15px;
+      height: 15px;
+      accent-color: #3478bd;
+    }
+    .multiselect .row-check { display: block; }
+    .multiselect .employee { padding-left: 29px; }
+    .drawer {
+      position: fixed;
+      right: 18px;
+      top: 92px;
+      width: 366px;
+      max-width: calc(100vw - 36px);
+      background: #fff;
+      border: 1px solid #d9dde4;
+      border-radius: 8px;
+      box-shadow: 0 18px 48px rgba(30, 41, 59, .18);
+      padding: 16px;
+      z-index: 20;
+      transform: translateX(420px);
+      transition: transform .18s ease;
+    }
+    .drawer.open { transform: translateX(0); }
+    .drawer-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 15px;
+    }
+    .drawer h2 { margin: 0 0 3px; color: #182538; font-size: 18px; }
+    .drawer p { margin: 0; color: #6e7785; font-size: 13px; line-height: 1.4; }
+    .drawer-close {
+      width: 30px;
+      height: 30px;
+      border: 0;
+      border-radius: 6px;
+      background: #e9edf2;
+      color: #273447;
+      font-size: 20px;
+    }
+    .drawer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 15px 0; }
+    .field { display: grid; gap: 5px; }
+    .field label { color: #687383; font-size: 12px; }
+    .field input,
+    .field select {
+      height: 36px;
+      border: 1px solid #d6dbe3;
+      border-radius: 5px;
+      outline: 0;
+      padding: 0 10px;
+      color: #223048;
+      background: #fff;
+    }
+    .field input:focus,
+    .field select:focus { box-shadow: var(--focus); border-color: #9eb6d7; }
+    .full { grid-column: 1 / -1; }
+    .drawer-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+    .primary { background: #1f252d; color: #fff; }
+    .ghost { background: #e4e8ed; color: #2d394a; }
+    .invalid {
+      border-color: var(--danger) !important;
+      box-shadow: 0 0 0 2px rgba(230,69,76,.12);
+    }
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 22px;
+      background: rgba(20, 28, 38, .28);
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      width: 430px;
+      max-width: 100%;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 24px 64px rgba(16, 24, 40, .26);
+      padding: 18px;
+    }
+    .modal h2 { margin: 0 0 14px; font-size: 20px; font-weight: 600; }
+    .route-editor-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+      background: rgba(20, 28, 38, .28);
+    }
+    .route-editor-backdrop.open { display: flex; }
+    .route-editor {
+      width: min(720px, 100%);
+      max-height: calc(100vh - 32px);
+      overflow: hidden;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 26px 72px rgba(16, 24, 40, .28);
+      padding: 14px 16px 14px;
+    }
+    .route-editor-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .route-editor-back {
+      border: 0;
+      background: transparent;
+      color: #1f252d;
+      font-size: 15px;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0;
+    }
+    .route-editor-back span {
+      font-size: 22px;
+      line-height: 1;
+    }
+    .route-editor-back strong {
+      font-size: 22px;
+      line-height: 1;
+      font-weight: 500;
+    }
+    .route-editor-close {
+      width: 40px;
+      height: 40px;
+      border: 0;
+      background: transparent;
+      color: #1f252d;
+      font-size: 30px;
+      line-height: 1;
+      display: grid;
+      place-items: center;
+    }
+    .route-editor-title {
+      margin: 0 0 14px;
+      color: #262a30;
+      font-size: 23px;
+      line-height: 1.12;
+      font-weight: 700;
+    }
+    .route-steps {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .route-steps-line {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 34px;
+      color: #2f3741;
+      font-size: 14px;
+    }
+    .route-step-dot {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 12px;
+      font-weight: 800;
+      flex: 0 0 auto;
+    }
+    .route-step-dot.done {
+      background: #15ba57;
+      color: #fff;
+    }
+    .route-step-dot.curr {
+      background: #22252b;
+      color: #fff;
+    }
+    .route-step-line {
+      height: 2px;
+      flex: 1;
+      background: #15ba57;
+      min-width: 24px;
+    }
+    .route-editor-period {
+      width: 350px;
+      max-width: 100%;
+      height: 44px;
+      border: 0;
+      border-radius: 10px;
+      background: #dfe3e8;
+      color: #7a8391;
+      padding: 0 12px;
+      font-size: 14px;
+      margin: 0 0 12px;
+    }
+    .route-calendar-card {
+      width: 380px;
+      max-width: 100%;
+      padding: 4px 0 0;
+    }
+    .route-calendar-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .route-cal-nav {
+      border: 0;
+      background: transparent;
+      color: #1f252d;
+      font-size: 24px;
+      line-height: 1;
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+    }
+    .route-month {
+      margin: 0;
+      color: #1f252d;
+      font-size: 24px;
+      font-weight: 600;
+      line-height: 1.1;
+    }
+    .route-weekdays,
+    .route-days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 0;
+    }
+    .route-weekdays div {
+      text-align: center;
+      color: #7d838f;
+      font-size: 13px;
+      padding: 9px 0 8px;
+    }
+    .route-day {
+      height: 44px;
+      border: 0;
+      background: transparent;
+      color: #2c3139;
+      font-size: 18px;
+      display: grid;
+      place-items: center;
+      position: relative;
+    }
+    .route-day.empty {
+      pointer-events: none;
+      opacity: .45;
+    }
+    .route-day::after { content: none; }
+.route-day.sel {
+      border-radius: 8px;
+      background: #edf1f5;
+      font-weight: 700;
+    }
+    .route-day-badge {
+      position: absolute;
+      left: 50%;
+      bottom: 1px;
+      transform: translateX(-50%);
+      color: #2e333b;
+      font-size: 9px;
+      font-weight: 600;
+      line-height: 1;
+      pointer-events: none;
+    }
+    .route-time-row {
+      display: flex;
+      gap: 14px;
+      margin: 12px 0;
+      width: 380px;
+      max-width: 100%;
+    }
+    .route-time {
+      flex: 1;
+      height: 50px;
+      border: 0;
+      border-radius: 10px;
+      background: #dfe3e8;
+      padding: 7px 12px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      grid-template-rows: auto 1fr;
+      align-items: center;
+      gap: 2px 10px;
+      color: #262c34;
+    }
+    .route-time label {
+      grid-column: 1 / 3;
+      font-size: 12px;
+      color: #7b8390;
+      line-height: 1;
+    }
+    .route-time input {
+      border: 0;
+      background: transparent;
+      outline: 0;
+      width: 100%;
+      font-size: 18px;
+      line-height: 1;
+      color: #1f252d;
+    }
+    .route-time i {
+      font-style: normal;
+      color: #868d98;
+      font-size: 12px;
+      line-height: 1;
+    }
+    .route-editor-actions {
+      display: flex;
+      gap: 14px;
+    }
+    .route-btn {
+      min-width: 132px;
+      height: 44px;
+      border: 0;
+      border-radius: 10px;
+      background: #1f2329;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      padding: 0 18px;
+    }
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      z-index: 50;
+      min-width: 300px;
+      max-width: calc(100vw - 40px);
+      padding: 12px 14px;
+      color: #fff;
+      background: rgba(25, 31, 39, .96);
+      border-radius: 7px;
+      box-shadow: 0 15px 34px rgba(0,0,0,.22);
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, 12px);
+      transition: .16s ease;
+      font-size: 13px;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    .empty-state {
+      grid-column: 1 / -1;
+      min-height: 220px;
+      display: grid;
+      place-items: center;
+      color: #687383;
+      background: #fff;
+      border-top: 1px solid var(--line-soft);
+    }
+    svg { display: block; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <button class="sync" type="button" title="Синхронизация" data-action="sync"></button>
+      <span class="divider"></span>
+      <span class="user-name">Михаил Михайлович Московский</span>
+      <button class="top-icon" type="button" title="Профиль" data-action="profile">
+        <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d="M10 10a3.8 3.8 0 1 0 0-7.6A3.8 3.8 0 0 0 10 10Zm-7 7.1c.5-3.2 3.4-5.4 7-5.4s6.5 2.2 7 5.4c.1.4-.2.7-.6.7H3.6c-.4 0-.7-.3-.6-.7Z"/></svg>
+      </button>
+      <span class="divider"></span>
+      <button class="top-icon" type="button" title="Выход" data-action="logout">
+        <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d="M3 3h7v14H3V3Zm9.2 3.1 4 3.9-4 3.9v-3H7.6V9.1h4.6v-3Z"/></svg>
+      </button>
+    </header>
+
+    <main class="workspace">
+      <h1 class="title">График СВК</h1>
+      <nav class="main-tabs" aria-label="Основные разделы">
+        <button class="main-tab active" type="button" data-main-tab="schedule">График СВК</button>
+        <button class="main-tab" type="button" data-main-tab="managers">Руководители подразделений</button>
+        <button class="main-tab" type="button" data-main-tab="routes">Маршруты городов</button>
+      </nav>
+
+      <section id="scheduleView">
+        <div class="subtabs">
+          <button class="pill active" type="button" data-subtab="main">Основной график</button>
+          <button class="pill" type="button" data-subtab="delivery">Вместе в доставке</button>
+        </div>
+
+        <div class="selector-row">
+          <label class="searchlike" aria-label="Название или КЛАДР">
+            <span>Москва Алтуфьево</span>
+            <svg width="19" height="19" viewBox="0 0 20 20" aria-hidden="true"><path fill="#1f2f44" d="m17.1 15.8-3.8-3.8a6 6 0 1 0-1.3 1.3l3.8 3.8 1.3-1.3ZM4.3 8.7a4.4 4.4 0 1 1 8.8 0 4.4 4.4 0 0 1-8.8 0Z"/></svg>
+          </label>
+          <button class="selectlike" type="button" data-action="month">
+            <span>Апрель, 2026</span>
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path fill="#788190" d="m8 10.4-4.5-4L4.6 5 8 8l3.4-3 1.1 1.4-4.5 4Z"/></svg>
+          </button>
+        </div>
+        <p class="label-line">Название или КЛАДР</p>
+
+        <section class="grid-shell" aria-label="График сотрудников">
+        <div class="toolbar toolbar-actions">
+          <div class="toolbar-right">
+            <button class="btn" type="button" data-open-modal="employee">Новый сотрудник</button>
+            <button class="btn" type="button" data-action="city-shifts">Смены городов</button>
+            <button class="square" type="button" data-action="export" title="Экспорт">
+              <svg width="17" height="17" viewBox="0 0 18 18" aria-hidden="true"><path fill="currentColor" d="M4 3h6.8L14 6.2V15H4V3Zm7 1.7V6h1.3L11 4.7ZM6 8l2 2-2 2 1.2 1.2 2-2 2 2L12.4 12l-2-2 2-2L11.2 6.8l-2 2-2-2L6 8Z"/></svg>
+            </button>
+            <button class="square" type="button" data-action="help" title="Помощь">?</button>
+          </div>
+        </div>
+        <div class="toolbar toolbar-main">
+          <div class="toolbar-left">
+            <label class="searchlike small-filter" aria-label="Поиск по ФИО">
+              <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><path fill="#5a6677" d="m17.1 15.8-3.8-3.8a6 6 0 1 0-1.3 1.3l3.8 3.8 1.3-1.3ZM4.3 8.7a4.4 4.4 0 1 1 8.8 0 4.4 4.4 0 0 1-8.8 0Z"/></svg>
+              <input id="employeeSearch" type="search" placeholder="Поиск по ФИО">
+            </label>
+            <button class="filter-button small-filter" type="button" data-dropdown="manager">Руководитель <span>⌄</span></button>
+            <button class="filter-button small-filter" type="button" data-dropdown="shifts">Все смены <span>⌄</span></button>
+            <button class="filter-button small-filter wide-filter" type="button" data-dropdown="staff">Штатный сот... <span>⌄</span></button>
+            <button class="filter-button small-filter" type="button" data-dropdown="filters">Фильтры <span>⌄</span></button>
+          </div>
+          <div class="toolbar-right">
+            <div class="switch-wrap">
+              <button id="multiToggle" class="switch" type="button" aria-pressed="false"></button>
+              <span>Мультивыбор</span>
+            </div>
+            <button class="selectlike period" type="button" data-action="period">Неделя <span>⌄</span></button>
+          </div>
+        </div>
+        <div class="toolbar-nav">
+          <div class="arrows">
+            <button class="round" type="button" data-week="-1" aria-label="Предыдущая неделя">‹</button>
+            <button class="round" type="button" data-week="1" aria-label="Следующая неделя">›</button>
+          </div>
+        </div>
+          <div id="schedule" class="schedule"></div>
+        </section>
+      </section>
+
+      <section id="routesView" class="routes-view" hidden>
+        <div class="routes-top-filters">
+          <button class="selectlike routes-select" type="button" data-action="routes-region">ДВ <span>⌄</span></button>
+          <button class="selectlike routes-select" type="button" data-action="routes-org">Организация <span>⌄</span></button>
+        </div>
+
+        <section class="routes-shell" aria-label="Маршруты городов">
+          <table class="routes-table">
+            <colgroup>
+              <col style="width:11%">
+              <col style="width:20%">
+              <col style="width:38%">
+              <col style="width:10%">
+              <col style="width:12%">
+              <col style="width:9%">
+            </colgroup>
+            <thead>
+              <tr>
+                <th>Название</th>
+                <th>Порядок городов</th>
+                <th>Продукты</th>
+                <th>График СВК</th>
+                <th>СВК</th>
+                <th>Действия</th>
+              </tr>
+              <tr class="routes-filters-row">
+                <th><input id="routeNameFilter" class="routes-control" type="search" placeholder="Название"></th>
+                <th>
+                  <button class="routes-select-control" type="button" data-action="route-city-filter"><span>Город</span><span>⌄</span></button>
+                  <span class="routes-hint">Название или КЛАДР</span>
+                </th>
+                <th></th>
+                <th></th>
+                <th>
+                  <label class="searchlike" style="width:100%;height:40px;border-radius:8px;padding-inline:12px;">
+                    <input id="routeSvkFilter" type="search" placeholder="Сотрудники орган...">
+                    <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true"><path fill="#4e5d72" d="m17.1 15.8-3.8-3.8a6 6 0 1 0-1.3 1.3l3.8 3.8 1.3-1.3ZM4.3 8.7a4.4 4.4 0 1 1 8.8 0 4.4 4.4 0 0 1-8.8 0Z"/></svg>
+                  </label>
+                </th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="routesBody">
+              <tr data-route-name="Айхал" data-route-svk="Кузнецова Алиса Олеговна">
+                <td class="routes-name">АЙХАЛ</td>
+                <td class="routes-order">Айхал</td>
+                <td class="routes-products">Зарплатная карта, Брокерский счет, Торговый эквайринг, Партнерский продукт, Кредитная карта, Дебетовая карта, Кредит наличными, Предодобренная кредитная карта, Расчетно-кассовое обслуживание, Кредитная документация МБ, Ипотека, Перевыпуск, Документы, Автокредит, Интернет-эквайринг, Регистрация бизнеса</td>
+                <td class="routes-schedule">01.11 - 19.11; 21.11 - 30.11;
+31.12; 31.01; 08:00 - 23:00</td>
+                <td>Кузнецова Алиса Олеговна</td>
+                <td>
+                  <div class="routes-actions">
+                    <button class="icon-btn" type="button" data-action="route-edit" title="Редактировать">✎</button>
+                    <button class="icon-btn" type="button" data-action="route-delete" title="Удалить">🗑</button>
+                  </div>
+                </td>
+              </tr>
+              <tr data-route-name="DSFSDFSDf" data-route-svk="">
+                <td class="routes-name">DSFSDFSDf</td>
+                <td class="routes-order">Протопоповка, Технический город MLM, Урал (Башкортостан, Кушнаренковский, деревня), Урал (Гафурийский), Урзаметово</td>
+                <td class="routes-products">Кредитная карта, Дебетовая карта</td>
+                <td class="routes-schedule">05.12; 09.12; 12.12; 14.12 - 15.12; 08:00 - 23:00</td>
+                <td></td>
+                <td>
+                  <div class="routes-actions">
+                    <button class="icon-btn" type="button" data-action="route-edit" title="Редактировать">✎</button>
+                    <button class="icon-btn" type="button" data-action="route-delete" title="Удалить">🗑</button>
+                  </div>
+                </td>
+              </tr>
+              <tr data-route-name="SDFGDSFSDf" data-route-svk="ASDASDasdas">
+                <td class="routes-name">SDFGDSFSDf</td>
+                <td class="routes-order">Раковка</td>
+                <td class="routes-products">Зарплатная карта, Торговый эквайринг, Кредитная карта</td>
+                <td class="routes-schedule">16.01 - 25.01; 08:00 - 23:00</td>
+                <td>ASDASDasdas</td>
+                <td>
+                  <div class="routes-actions">
+                    <button class="icon-btn" type="button" data-action="route-edit" title="Редактировать">✎</button>
+                    <button class="icon-btn" type="button" data-action="route-delete" title="Удалить">🗑</button>
+                  </div>
+                </td>
+              </tr>
+              <tr data-route-name="Сохранение" data-route-svk="Баг применения маршрута">
+                <td class="routes-name">Сохранение</td>
+                <td class="routes-order">Палатка</td>
+                <td class="routes-products">Брокерский счет, Кредитная карта, Кредит наличными</td>
+                <td class="routes-schedule">23.01 - 25.01; 08:00 - 23:00</td>
+                <td>Баг применения маршрута</td>
+                <td>
+                  <div class="routes-actions">
+                    <button class="icon-btn" type="button" data-action="route-edit" title="Редактировать">✎</button>
+                    <button class="icon-btn" type="button" data-action="route-delete" title="Удалить">🗑</button>
+                  </div>
+                </td>
+              </tr>
+              <tr data-route-name="New marshrut" data-route-svk="Применение Баг">
+                <td class="routes-name">New marshrut</td>
+                <td class="routes-order">Соловьевск</td>
+                <td class="routes-products">Кредитная карта, Дебетовая карта, Кредит наличными</td>
+                <td class="routes-schedule"></td>
+                <td>Применение Баг</td>
+                <td>
+                  <div class="routes-actions">
+                    <button class="icon-btn" type="button" data-action="route-edit" title="Редактировать">✎</button>
+                    <button class="icon-btn" type="button" data-action="route-delete" title="Удалить">🗑</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <aside id="drawer" class="drawer" aria-hidden="true">
+    <div class="drawer-head">
+      <div>
+        <h2 id="drawerTitle">Смена сотрудника</h2>
+        <p id="drawerMeta">Выберите дату и тип встречи.</p>
+      </div>
+      <button class="drawer-close" type="button" data-close-drawer>×</button>
+    </div>
+    <div class="drawer-grid">
+      <div class="field full">
+        <label for="drawerEmployee">Сотрудник</label>
+        <input id="drawerEmployee" type="text" readonly>
+      </div>
+      <div class="field">
+        <label for="drawerDate">Дата</label>
+        <input id="drawerDate" type="text" readonly>
+      </div>
+      <div class="field">
+        <label for="drawerType">Тип встречи</label>
+        <select id="drawerType">
+          <option>Именной</option>
+          <option>Неименной</option>
+          <option>Смешанный</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="drawerStart">Начало</label>
+        <input id="drawerStart" type="time" value="09:00">
+      </div>
+      <div class="field">
+        <label for="drawerEnd">Окончание</label>
+        <input id="drawerEnd" type="time" value="18:00">
+      </div>
+      <div class="field full">
+        <label for="drawerComment">Комментарий</label>
+        <input id="drawerComment" type="text" placeholder="Например: смена вместе с доставкой">
+      </div>
+    </div>
+    <div class="drawer-actions">
+      <button class="btn ghost" type="button" data-remove-shift>Удалить</button>
+      <button class="btn primary" type="button" data-save-shift>Сохранить</button>
+    </div>
+  </aside>
+
+  <div id="employeeModal" class="modal-backdrop" aria-hidden="true">
+    <form id="employeeForm" class="modal" novalidate>
+      <h2>Новый сотрудник</h2>
+      <div class="drawer-grid">
+        <div class="field full">
+          <label for="newName">ФИО</label>
+          <input id="newName" type="text" placeholder="Фамилия Имя Отчество" required>
+        </div>
+        <div class="field">
+          <label for="newRole">Роль</label>
+          <select id="newRole">
+            <option>Универсал</option>
+            <option>РБ</option>
+            <option>СВК</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="newLoad">Смен в неделю</label>
+          <input id="newLoad" type="number" min="1" max="7" value="5" required>
+        </div>
+      </div>
+      <div class="drawer-actions">
+        <button class="btn ghost" type="button" data-close-modal>Отмена</button>
+        <button class="btn primary" type="submit">Добавить</button>
+      </div>
+    </form>
+  </div>
+
+  <div id="routeEditorModal" class="route-editor-backdrop" aria-hidden="true">
+    <section class="route-editor" role="dialog" aria-modal="true" aria-label="Создание маршрута городов">
+      <header class="route-editor-head">
+        <button class="route-editor-back" type="button" data-close-route-editor>
+          <span>←</span><strong>Назад</strong>
+        </button>
+        <button class="route-editor-close" type="button" data-close-route-editor>×</button>
+      </header>
+
+      <h2 class="route-editor-title">Создание маршрута городов</h2>
+
+      <div class="route-steps">
+        <div class="route-steps-line">
+          <span class="route-step-dot done">✓</span>
+          <span>Выбор городов</span>
+          <span class="route-step-line"></span>
+          <span class="route-step-dot done">✓</span>
+          <span>Настройки продуктов</span>
+          <span class="route-step-line"></span>
+          <span class="route-step-dot done">✓</span>
+          <span>Выбор СВК</span>
+        </div>
+        <div class="route-steps-line">
+          <span class="route-step-dot done">✓</span>
+          <span>Настройка СВК</span>
+          <span class="route-step-line"></span>
+          <span class="route-step-dot curr">5</span>
+          <span>График СВК</span>
+        </div>
+      </div>
+
+      <input class="route-editor-period" type="text" readonly value="Период активности (01.11.2025 + 30)">
+
+      <section class="route-calendar-card">
+        <div class="route-calendar-head">
+          <button class="route-cal-nav" type="button" data-route-month="-1">‹</button>
+          <h3 id="routeMonthLabel" class="route-month">Ноябрь 2025</h3>
+          <button class="route-cal-nav" type="button" data-route-month="1">›</button>
+        </div>
+        <div class="route-weekdays">
+          <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div>Сб</div><div>Вс</div>
+        </div>
+        <div id="routeCalendarDays" class="route-days"></div>
+      </section>
+
+      <div class="route-time-row">
+        <div class="route-time">
+          <label for="routeStartHour">Начало</label>
+          <input id="routeStartHour" type="number" min="0" max="23" value="8">
+          <i>◔</i>
+        </div>
+        <div class="route-time">
+          <label for="routeEndHour">Конец</label>
+          <input id="routeEndHour" type="number" min="0" max="23" value="23">
+          <i>◔</i>
+        </div>
+      </div>
+
+      <div class="route-editor-actions">
+        <button class="route-btn" type="button" data-route-save>Сохранить</button>
+        <button class="route-btn" type="button" data-route-apply>Применить</button>
+      </div>
+    </section>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const state = {
+      mainTab: "schedule",
+      subtab: "main",
+      weekOffset: 0,
+      multiselect: false,
+      selectedRows: new Set(),
+      drawer: null,
+      shifts: new Map(),
+      routeMonthOffset: 0,
+      routeSelectedDay: 1
+    };
+
+    const baseDays = [
+      { dow: "ПН", date: "30.03", weekend: false },
+      { dow: "ВТ", date: "31.03", weekend: false },
+      { dow: "СР", date: "01.04", weekend: false },
+      { dow: "ЧТ", date: "02.04", weekend: false },
+      { dow: "ПТ", date: "03.04", weekend: false },
+      { dow: "СБ", date: "04.04", weekend: true },
+      { dow: "ВС", date: "05.04", weekend: true }
+    ];
+
+    const employees = [
+      { id: "e1", name: "Смирнов Артем Павлович", role: "Универсал", cards: "0/0", meet: "5/2", all: "Все", pattern: ["clock", "plus", "plus", "clock", "clock", "clock", "clock"] },
+      { id: "e2", name: "Кузнецов Илья Маратович", role: "Универсал", cards: "0/0", meet: "5/2", all: "Все", pattern: ["clock", "plus", "plus", "clock", "clock", "clock", "clock"] },
+      { id: "e3", name: "Орлов Максим Сергеевич", role: "РБ", cards: "0/0", meet: "5/2", all: "Все", pattern: ["clock", "plus", "plus", "clock", "clock", "clock", "clock"] },
+      { id: "e4", name: "Морозов Кирилл Андреевич", role: "РБ", cards: "0/0", meet: "5/2", all: "Все", pattern: ["clock", "plus", "plus", "clock", "clock", "clock", "clock"] },
+      { id: "e5", name: "Алексеев Роман Олегович", role: "РБ", cards: "0/0", meet: "5/2", all: "Все", pattern: ["clock", "plus", "plus", "clock", "clock", "clock", "clock"] },
+      { id: "e6", name: "Белов Дмитрий Валерьевич", role: "РБ", cards: "0/0", meet: "5/2", all: "Все", pattern: ["clock", "plus", "plus", "clock", "clock", "clock", "clock"] },
+      { id: "e7", name: "Лебедев Тимур Евгеньевич", role: "РБ", cards: "0/0", meet: "5/2", all: "Все", pattern: ["plus", "plus", "plus", "plus", "clock", "clock", "clock"] },
+      { id: "e8", name: "Андреев Николай Викторович", role: "СВК", cards: "1/0", meet: "4/1", all: "Все", pattern: ["clock", "clock", "plus", "clock", "plus", "clock", "plus"] }
+    ];
+
+    const metrics = [
+      ["43", "125843", "43", "0", "19", "201"],
+      ["37", "109337", "37", "0", "11", "296"],
+      ["35", "103235", "35", "0", "14", "205"],
+      ["40", "116840", "40", "0", "59", "262"],
+      ["39", "113839", "39", "0", "95", "223"],
+      ["29", "86029", "29", "0", "6", "113"],
+      ["29", "86029", "29", "0", "5", "44"]
+    ];
+    const preorderCounts = [18, 14, 16, 21, 19, 11, 9];
+
+    const schedule = document.getElementById("schedule");
+    const toast = document.getElementById("toast");
+    const drawer = document.getElementById("drawer");
+    const employeeSearch = document.getElementById("employeeSearch");
+    const employeeModal = document.getElementById("employeeModal");
+    const employeeForm = document.getElementById("employeeForm");
+    const scheduleView = document.getElementById("scheduleView");
+    const routesView = document.getElementById("routesView");
+    const routeNameFilter = document.getElementById("routeNameFilter");
+    const routeSvkFilter = document.getElementById("routeSvkFilter");
+    const routesBody = document.getElementById("routesBody");
+    const routeEditorModal = document.getElementById("routeEditorModal");
+    const routeMonthLabel = document.getElementById("routeMonthLabel");
+    const routeCalendarDays = document.getElementById("routeCalendarDays");
+
+    const keyFor = (employeeId, dayIndex) => `${employeeId}:${dayIndex + state.weekOffset * 7}`;
+
+    function showToast(text) {
+      toast.textContent = text;
+      toast.classList.add("show");
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => toast.classList.remove("show"), 1900);
+    }
+
+    function visibleEmployees() {
+      const q = employeeSearch.value.trim().toLowerCase();
+      return employees.filter((employee) => employee.name.toLowerCase().includes(q));
+    }
+
+    function shiftedDay(day, index) {
+      if (!state.weekOffset) return day;
+      const base = new Date(Date.UTC(2026, 2, 30 + index + state.weekOffset * 7));
+      const date = String(base.getUTCDate()).padStart(2, "0");
+      const month = String(base.getUTCMonth() + 1).padStart(2, "0");
+      return { ...day, date: `${date}.${month}` };
+    }
+
+    function cellMode(employee, dayIndex) {
+      const key = keyFor(employee.id, dayIndex);
+      if (state.shifts.has(key)) return state.shifts.get(key).mode;
+      return employee.pattern[dayIndex] || "plus";
+    }
+
+    function render() {
+      const rows = visibleEmployees();
+      schedule.className = `schedule${state.multiselect ? " multiselect" : ""}`;
+      schedule.innerHTML = "";
+
+      const corner = document.createElement("div");
+      corner.className = "corner";
+      corner.innerHTML = [
+        "<div class=\"corner-label\">Количество сотрудников / встреч</div>",
+        "<div class=\"corner-label\">Количество сотрудников: Все / Неименной</div>",
+        "<div class=\"corner-label\">Тип встреч: Именной / Неименной</div>",
+        "<div class=\"corner-label preorder\">Заявки по предзаказу</div>",
+        "<div class=\"corner-date\">ДАТА</div>"
+      ].join("");
+      schedule.append(corner);
+
+      baseDays.map(shiftedDay).forEach((day, index) => {
+        const data = metrics[index];
+        const preorder = Math.max(0, preorderCounts[index] + state.weekOffset);
+        const head = document.createElement("div");
+        head.className = "day-head";
+        head.innerHTML = `
+          <div class="metric"><span>${data[0]}</span><span class="sep">/</span><span>${Number(data[1]) + state.weekOffset * 126}</span></div>
+          <div class="metric"><span>${data[2]}</span><span class="sep">/</span><span>${data[3]}</span></div>
+          <div class="metric"><span>${data[4]}</span><span class="sep">/</span><span>${data[5]}</span></div>
+          <div class="metric preorder"><span>${preorder}</span></div>
+          <div class="date-line ${day.weekend ? "weekend" : ""}"><span>${day.dow}</span><strong>${day.date}</strong></div>
+        `;
+        schedule.append(head);
+      });
+
+      if (!rows.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty-state";
+        empty.textContent = "По текущему поиску сотрудников не найдено";
+        schedule.append(empty);
+        return;
+      }
+
+      rows.forEach((employee, rowIndex) => {
+        const isAlt = rowIndex % 2 === 1;
+        const rowHead = document.createElement("div");
+        rowHead.className = `employee${isAlt ? " alt" : ""}`;
+        rowHead.innerHTML = `
+          <input class="row-check" type="checkbox" ${state.selectedRows.has(employee.id) ? "checked" : ""} data-row-check="${employee.id}">
+          <p class="emp-name" title="${employee.name}">${employee.name}</p>
+          <div class="emp-meta">
+            <span><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M2 5.8C2 4.2 3.4 3 5.1 3h5.8C12.6 3 14 4.2 14 5.8v1.6c0 1.5-1.4 2.8-3.1 2.8H8L4.8 13v-2.8C3.2 10 2 8.8 2 7.4V5.8Z"/></svg></span>
+            <span><svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M3 3h10v10H3V3Zm2 2v2h2V5H5Zm4 0v2h2V5H9ZM5 9v2h2V9H5Zm4 0v2h2V9H9Z"/></svg></span>
+            <span>${employee.role}</span>
+            <span>${employee.cards}</span>
+            <span>${employee.meet}</span>
+            <span>${employee.all}</span>
+          </div>
+        `;
+        schedule.append(rowHead);
+
+        baseDays.forEach((day, dayIndex) => {
+          const key = keyFor(employee.id, dayIndex);
+          const mode = cellMode(employee, dayIndex);
+          const current = state.shifts.get(key);
+          const cell = document.createElement("div");
+          cell.className = `cell${isAlt ? " alt" : ""}${state.drawer && state.drawer.key === key ? " selected" : ""}`;
+          if (mode === "clock") {
+            cell.innerHTML = `<button type="button" data-cell="${employee.id}" data-day="${dayIndex}" aria-label="Открыть смену">+</button>${current && current.start ? `<span class="cell-info">${current.start}-${current.end}</span>` : ""}`;
+          } else {
+            cell.innerHTML = `<button type="button" data-cell="${employee.id}" data-day="${dayIndex}" aria-label="Добавить смену">+</button>`;
+          }
+          schedule.append(cell);
+        });
+      });
+
+    }
+
+    function applyMainTabView() {
+      const isRoutes = state.mainTab === "routes";
+      scheduleView.hidden = isRoutes;
+      routesView.hidden = !isRoutes;
+      if (isRoutes) {
+        drawer.classList.remove("open");
+        drawer.setAttribute("aria-hidden", "true");
+        state.drawer = null;
+      }
+    }
+
+    function applyRouteFilters() {
+      const byName = routeNameFilter.value.trim().toLowerCase();
+      const bySvk = routeSvkFilter.value.trim().toLowerCase();
+      let visible = 0;
+      routesBody.querySelectorAll("tr").forEach((row) => {
+        const name = (row.dataset.routeName || "").toLowerCase();
+        const svk = (row.dataset.routeSvk || "").toLowerCase();
+        const match = (!byName || name.includes(byName)) && (!bySvk || svk.includes(bySvk));
+        row.hidden = !match;
+        if (match) visible += 1;
+      });
+      const existingEmpty = routesBody.querySelector(".routes-empty");
+      if (!visible && !existingEmpty) {
+        const tr = document.createElement("tr");
+        tr.className = "routes-empty";
+        tr.innerHTML = "<td colspan='6'>По заданным фильтрам маршруты не найдены</td>";
+        routesBody.append(tr);
+      }
+      if (visible && existingEmpty) existingEmpty.remove();
+    }
+
+    function getRouteMonthDate() {
+      return new Date(2025, 10 + state.routeMonthOffset, 1);
+    }
+
+    function formatRouteMonthLabel(date) {
+      const raw = new Intl.DateTimeFormat("ru-RU", { month: "long", year: "numeric" }).format(date);
+      const normalized = raw.replace(" г.", "").replace(" г", "");
+      return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+    }
+
+    function routeBadgeValue(year, month, day) {
+      const seed = (year * 101 + (month + 1) * 17 + day * 29) % 97;
+      if (seed % 3 === 0) return null;
+      return (seed % 10) + 1;
+    }
+
+    function renderRouteCalendar() {
+      const date = getRouteMonthDate();
+      const year = date.getFullYear();
+      const month = date.getMonth();
+      routeMonthLabel.textContent = formatRouteMonthLabel(date);
+
+      const firstWeekday = (new Date(year, month, 1).getDay() + 6) % 7;
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      routeCalendarDays.innerHTML = "";
+
+      for (let i = 0; i < firstWeekday; i += 1) {
+        const empty = document.createElement("button");
+        empty.type = "button";
+        empty.className = "route-day empty";
+        empty.tabIndex = -1;
+        routeCalendarDays.append(empty);
+      }
+
+      for (let day = 1; day <= daysInMonth; day += 1) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = `route-day${state.routeSelectedDay === day ? " sel" : ""}`;
+        btn.dataset.routeDay = String(day);
+        btn.textContent = String(day);
+        const badge = routeBadgeValue(year, month, day);
+        if (badge !== null) {
+          const mark = document.createElement("span");
+          mark.className = "route-day-badge";
+          mark.textContent = String(badge);
+          btn.append(mark);
+        }
+        routeCalendarDays.append(btn);
+      }
+    }
+
+    function openRouteEditor() {
+      routeEditorModal.classList.add("open");
+      routeEditorModal.setAttribute("aria-hidden", "false");
+      renderRouteCalendar();
+    }
+
+    function closeRouteEditor() {
+      routeEditorModal.classList.remove("open");
+      routeEditorModal.setAttribute("aria-hidden", "true");
+    }
+
+    function setMainTab(id) {
+      state.mainTab = id;
+      document.querySelectorAll("[data-main-tab]").forEach((tab) => {
+        tab.classList.toggle("active", tab.dataset.mainTab === id);
+      });
+      applyMainTabView();
+      if (id === "managers") showToast("Раздел руководителей открыт в режиме демонстрации");
+      if (id === "routes") applyRouteFilters();
+    }
+
+    function setSubtab(id) {
+      state.subtab = id;
+      document.querySelectorAll("[data-subtab]").forEach((tab) => {
+        tab.classList.toggle("active", tab.dataset.subtab === id);
+      });
+      showToast(id === "main" ? "Показан основной график" : "Показан график вместе в доставке");
+    }
+
+    function openDrawer(employeeId, dayIndex) {
+      const employee = employees.find((item) => item.id === employeeId);
+      const day = shiftedDay(baseDays[dayIndex], dayIndex);
+      const key = keyFor(employeeId, dayIndex);
+      const current = state.shifts.get(key);
+      state.drawer = { key, employeeId, dayIndex };
+      document.getElementById("drawerEmployee").value = employee.name;
+      document.getElementById("drawerDate").value = `${day.dow} ${day.date}`;
+      document.getElementById("drawerType").value = current?.type || "Именной";
+      document.getElementById("drawerStart").value = current?.start || "09:00";
+      document.getElementById("drawerEnd").value = current?.end || "18:00";
+      document.getElementById("drawerComment").value = current?.comment || "";
+      document.getElementById("drawerTitle").textContent = current || cellMode(employee, dayIndex) === "clock" ? "Редактирование смены" : "Новая смена";
+      document.getElementById("drawerMeta").textContent = `${employee.role}, ${day.dow} ${day.date}`;
+      drawer.classList.add("open");
+      drawer.setAttribute("aria-hidden", "false");
+      render();
+    }
+
+    function closeDrawer() {
+      state.drawer = null;
+      drawer.classList.remove("open");
+      drawer.setAttribute("aria-hidden", "true");
+      render();
+    }
+
+    function saveShift() {
+      if (!state.drawer) return;
+      const start = document.getElementById("drawerStart");
+      const end = document.getElementById("drawerEnd");
+      [start, end].forEach((input) => input.classList.remove("invalid"));
+      if (!start.value || !end.value || start.value >= end.value) {
+        if (!start.value) start.classList.add("invalid");
+        end.classList.add("invalid");
+        showToast("Проверьте время смены: окончание должно быть позже начала");
+        (start.value ? end : start).focus();
+        return;
+      }
+      state.shifts.set(state.drawer.key, {
+        mode: "clock",
+        type: document.getElementById("drawerType").value,
+        start: start.value,
+        end: end.value,
+        comment: document.getElementById("drawerComment").value.trim()
+      });
+      showToast("Смена сохранена в графике");
+      closeDrawer();
+    }
+
+    function removeShift() {
+      if (!state.drawer) return;
+      state.shifts.set(state.drawer.key, { mode: "plus" });
+      showToast("Смена удалена из ячейки");
+      closeDrawer();
+    }
+
+    function toggleMultiselect() {
+      state.multiselect = !state.multiselect;
+      if (!state.multiselect) state.selectedRows.clear();
+      const sw = document.getElementById("multiToggle");
+      sw.classList.toggle("on", state.multiselect);
+      sw.setAttribute("aria-pressed", String(state.multiselect));
+      showToast(state.multiselect ? "Мультивыбор включен" : "Мультивыбор выключен");
+      render();
+    }
+
+    function openEmployeeModal() {
+      employeeModal.classList.add("open");
+      employeeModal.setAttribute("aria-hidden", "false");
+      document.getElementById("newName").focus();
+    }
+
+    function closeEmployeeModal() {
+      employeeModal.classList.remove("open");
+      employeeModal.setAttribute("aria-hidden", "true");
+      employeeForm.reset();
+      document.getElementById("newLoad").value = "5";
+      employeeForm.querySelectorAll(".invalid").forEach((node) => node.classList.remove("invalid"));
+    }
+
+    document.addEventListener("click", (event) => {
+      const mainTab = event.target.closest("[data-main-tab]");
+      if (mainTab) return setMainTab(mainTab.dataset.mainTab);
+
+      const subtab = event.target.closest("[data-subtab]");
+      if (subtab) return setSubtab(subtab.dataset.subtab);
+
+      const cell = event.target.closest("[data-cell]");
+      if (cell) return openDrawer(cell.dataset.cell, Number(cell.dataset.day));
+
+      const week = event.target.closest("[data-week]");
+      if (week) {
+        state.weekOffset += Number(week.dataset.week);
+        showToast(state.weekOffset === 0 ? "Показана базовая неделя" : `Неделя смещена на ${state.weekOffset}`);
+        return render();
+      }
+
+      if (event.target.closest("[data-action='route-edit']")) return openRouteEditor();
+      if (event.target.closest("[data-close-route-editor]")) return closeRouteEditor();
+
+      const routeMonth = event.target.closest("[data-route-month]");
+      if (routeMonth) {
+        state.routeMonthOffset += Number(routeMonth.dataset.routeMonth);
+        const nextMonth = new Date(2025, 10 + state.routeMonthOffset + 1, 0).getDate();
+        state.routeSelectedDay = Math.min(state.routeSelectedDay, nextMonth);
+        return renderRouteCalendar();
+      }
+
+      const routeDay = event.target.closest("[data-route-day]");
+      if (routeDay) {
+        state.routeSelectedDay = Number(routeDay.dataset.routeDay);
+        return renderRouteCalendar();
+      }
+
+      if (event.target.closest("[data-route-save]")) return showToast("Изменения графика маршрута сохранены");
+      if (event.target.closest("[data-route-apply]")) {
+        showToast("Настройки применены к маршруту");
+        return closeRouteEditor();
+      }
+
+      if (event.target.closest("#multiToggle")) return toggleMultiselect();
+      if (event.target.closest("[data-close-drawer]")) return closeDrawer();
+      if (event.target.closest("[data-save-shift]")) return saveShift();
+      if (event.target.closest("[data-remove-shift]")) return removeShift();
+      if (event.target.closest("[data-open-modal='employee']")) return openEmployeeModal();
+      if (event.target.closest("[data-close-modal]")) return closeEmployeeModal();
+
+      const rowCheck = event.target.closest("[data-row-check]");
+      if (rowCheck) {
+        if (rowCheck.checked) state.selectedRows.add(rowCheck.dataset.rowCheck);
+        else state.selectedRows.delete(rowCheck.dataset.rowCheck);
+        showToast(`Выбрано сотрудников: ${state.selectedRows.size}`);
+        return;
+      }
+
+      const dropdown = event.target.closest("[data-dropdown]");
+      if (dropdown) return showToast(`Фильтр "${dropdown.textContent.trim()}" готов к настройке`);
+
+      const action = event.target.closest("[data-action]");
+      if (action) {
+        const messages = {
+          sync: "Данные графика синхронизированы",
+          profile: "Открыта карточка пользователя",
+          logout: "Выход доступен в рабочем приложении",
+          month: "Выбор месяца открыт в режиме демонстрации",
+          "routes-region": "Фильтр региона открыт в режиме демонстрации",
+          "routes-org": "Фильтр организации открыт в режиме демонстрации",
+          "route-city-filter": "Фильтр городов открыт в режиме демонстрации",
+          "route-edit": "Редактирование маршрута доступно в рабочем приложении",
+          "route-delete": "Удаление маршрута доступно в рабочем приложении",
+          "city-shifts": "Открыта настройка смен городов",
+          export: "Подготовлен экспорт графика",
+          help: "Помощь по графику: кликайте по ячейкам для редактирования",
+          period: "Переключатель периода открыт в режиме демонстрации"
+        };
+        return showToast(messages[action.dataset.action] || "Действие выполнено");
+      }
+    });
+
+    employeeSearch.addEventListener("input", render);
+    routeNameFilter.addEventListener("input", applyRouteFilters);
+    routeSvkFilter.addEventListener("input", applyRouteFilters);
+
+    employeeForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const name = document.getElementById("newName");
+      const load = document.getElementById("newLoad");
+      [name, load].forEach((input) => input.classList.remove("invalid"));
+      if (!name.value.trim()) {
+        name.classList.add("invalid");
+        showToast("Заполните ФИО сотрудника");
+        name.focus();
+        return;
+      }
+      if (!load.value || Number(load.value) < 1) {
+        load.classList.add("invalid");
+        showToast("Укажите количество смен");
+        load.focus();
+        return;
+      }
+      employees.push({
+        id: `e${Date.now()}`,
+        name: name.value.trim(),
+        role: document.getElementById("newRole").value,
+        cards: "0/0",
+        meet: `${load.value}/0`,
+        all: "Все",
+        pattern: ["plus", "plus", "plus", "plus", "plus", "plus", "plus"]
+      });
+      closeEmployeeModal();
+      showToast("Сотрудник добавлен в график");
+      render();
+    });
+
+    employeeForm.addEventListener("input", (event) => {
+      event.target.classList.remove("invalid");
+    });
+
+    employeeModal.addEventListener("click", (event) => {
+      if (event.target === employeeModal) closeEmployeeModal();
+    });
+
+    routeEditorModal.addEventListener("click", (event) => {
+      if (event.target === routeEditorModal) closeRouteEditor();
+    });
+
+    render();
+    applyMainTabView();
+    applyRouteFilters();
+    renderRouteCalendar();
+  </script>
+</body>
+</html>
+
