@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
+  <title>Demo SFA Go - Единый экран встреч</title>
+  <style>
+    :root {
+      --bg: #eef2f6;
+      --surface: #ffffff;
+      --surface-soft: #f7f9fc;
+      --line: #d8e0ea;
+      --text: #17314c;
+      --muted: #738196;
+      --accent: #101a2b;
+      --accent-soft: #e5f2ef;
+      --green: #16915b;
+      --blue: #285ea7;
+      --shadow: 0 18px 36px rgba(23, 49, 76, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(22, 145, 91, 0.12), transparent 24%),
+        linear-gradient(180deg, #f8fafc 0%, var(--bg) 100%);
+      display: grid;
+      place-items: center;
+      color: var(--text);
+      padding: 8px;
+    }
+
+    .phone {
+      width: min(390px, 100vw);
+      min-height: 100dvh;
+      background: linear-gradient(180deg, #f7f9fc 0%, #edf2f7 100%);
+      border: 1px solid #d6dee8;
+      overflow: hidden;
+    }
+
+    .screen {
+      padding: 18px 16px 28px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .status-pill,
+    .counter {
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .status-pill {
+      background: #e8eef8;
+      color: var(--blue);
+    }
+
+    .counter {
+      background: #101a2b;
+      color: #fff;
+    }
+
+    .hero {
+      padding: 18px;
+      border-radius: 26px;
+      background:
+        radial-gradient(circle at top right, rgba(255, 255, 255, 0.4), transparent 24%),
+        linear-gradient(135deg, #14345a 0%, #0d6b72 100%);
+      color: #fff;
+      box-shadow: 0 22px 44px rgba(16, 26, 43, 0.22);
+      margin-bottom: 18px;
+    }
+
+    .hero strong {
+      display: inline-flex;
+      margin-bottom: 12px;
+      padding: 7px 11px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.16);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .hero h1 {
+      margin: 0 0 10px;
+      font-size: 28px;
+      line-height: 1.04;
+      letter-spacing: -0.03em;
+    }
+
+    .hero p {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.82);
+      line-height: 1.5;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      margin: 0 0 12px;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .section-head span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .card {
+      padding: 16px;
+      border-radius: 22px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+
+    .card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .chip.active {
+      background: #e6f6ee;
+      color: var(--green);
+    }
+
+    .chip.flow {
+      background: #edf3ff;
+      color: var(--blue);
+    }
+
+    .card h3 {
+      margin: 0 0 8px;
+      font-size: 19px;
+      line-height: 1.14;
+    }
+
+    .card p {
+      margin: 0 0 14px;
+      color: var(--muted);
+      line-height: 1.48;
+    }
+
+    .meta {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .meta-line {
+      display: grid;
+      grid-template-columns: 16px minmax(0, 1fr);
+      gap: 10px;
+      color: #32455f;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .card-actions {
+      display: grid;
+      gap: 10px;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 16px;
+      padding: 14px 16px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-secondary {
+      background: var(--surface-soft);
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+
+    .placeholder {
+      padding: 16px;
+      border-radius: 22px;
+      border: 1px dashed #c7d2e2;
+      background: rgba(255, 255, 255, 0.72);
+      color: var(--muted);
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="phone">
+    <div class="screen">
+      <div class="topbar">
+        <span class="status-pill">Demo SFA Go</span>
+        <span class="counter">2 flow</span>
+      </div>
+
+      <section class="hero">
+        <strong>Единый экран встреч</strong>
+        <h1>SFA Go Demo Hub</h1>
+        <p>Здесь живут все продуктовые сценарии проекта. Каждый flow лежит отдельно, но пользователь открывает их как единую demo-среду.</p>
+      </section>
+
+      <div class="section-head">
+        <h2>Текущие сценарии</h2>
+        <span>Стартовая точка для продукта</span>
+      </div>
+
+      <div class="stack">
+        <article class="card">
+          <div class="card-top">
+            <span class="chip active">Активно</span>
+            <span class="chip flow">Debit Card</span>
+          </div>
+          <h3>Выдача дебетовой карты</h3>
+          <p>Полный flow встречи: активные встречи, согласование, выдача продукта, подписание, онбординг и завершение.</p>
+          <div class="meta">
+            <div class="meta-line"><span>◔</span><span>Основной мобильный сценарий Demo SFA Go.</span></div>
+            <div class="meta-line"><span>➤</span><span>Используется как базовый reference для следующих продуктовых flow.</span></div>
+          </div>
+          <div class="card-actions">
+            <button class="btn btn-primary" type="button" data-flow="debit-card">Открыть flow</button>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-top">
+            <span class="chip active">Активно</span>
+            <span class="chip flow">Transfer</span>
+          </div>
+          <h3>Перенос встречи</h3>
+          <p>Flow вынесен в отдельную подпапку, чтобы дорабатывать его независимо от выдачи дебетовой карты, но внутри общего проекта.</p>
+          <div class="meta">
+            <div class="meta-line"><span>◔</span><span>Подходит для отдельной шлифовки логики календаря, причин и интервалов.</span></div>
+            <div class="meta-line"><span>➤</span><span>Открывается через тот же Demo SFA Go shell одной ссылкой.</span></div>
+          </div>
+          <div class="card-actions">
+            <button class="btn btn-primary" type="button" data-flow="meeting-transfer">Открыть flow</button>
+          </div>
+        </article>
+
+        <div class="placeholder">
+          Следующие продукты удобно добавлять сюда же отдельными карточками. Например: кредитная карта, дополнительные встречи, сервисные сценарии, процессы статусов и витрины согласования.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function openFlow(flow) {
+      const payload = { type: "demo-sfa-go:navigate", flow };
+      try { window.parent.postMessage(payload, "*"); } catch {}
+      try { window.top.postMessage(payload, "*"); } catch {}
+      if (window.parent === window) {
+        const url = new URL("../index.html", location.href);
+        url.searchParams.set("flow", flow);
+        location.href = url.toString();
+      }
+    }
+
+    document.querySelectorAll("[data-flow]").forEach((button) => {
+      button.addEventListener("click", () => openFlow(button.dataset.flow));
+    });
+  </script>
+</body>
+</html>
